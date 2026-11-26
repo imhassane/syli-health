@@ -1,0 +1,244 @@
+/*
+ * A table without rules: rows told apart by a soft tint, rounded. Sticky
+ * column headers; on a narrow container, each row becomes a card whose cells
+ * carry their column's name.
+ */
+.sy-table {
+  display: grid;
+  gap: var(--sy-space-4);
+  padding: var(--sy-space-5);
+  border-radius: var(--sy-radius-xl);
+  background: var(--sy-surface);
+  box-shadow: var(--sy-shadow-card);
+}
+
+.sy-table__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sy-space-3);
+}
+
+.sy-table__title {
+  margin: 0;
+  font-size: var(--sy-text-lg);
+  font-weight: var(--sy-weight-strong);
+}
+
+.sy-table__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sy-space-2);
+}
+
+.sy-table__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sy-space-3);
+}
+
+.sy-table__search {
+  flex: 1 1 16rem;
+  max-inline-size: 28rem;
+}
+
+.sy-table__error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sy-space-3);
+  padding: var(--sy-space-3) var(--sy-space-4);
+  border-radius: var(--sy-radius-md);
+  background: var(--sy-danger-soft);
+  color: var(--sy-danger-ink);
+  font-weight: var(--sy-weight-medium);
+}
+
+.sy-table__error > span {
+  flex: 1;
+}
+
+.sy-table__scroll {
+  container: sy-table / inline-size;
+  overflow: auto;
+  max-block-size: min(40rem, 75vh);
+  border-radius: var(--sy-radius-md);
+}
+
+.sy-table__table {
+  inline-size: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: var(--sy-text-md);
+  transition: opacity var(--sy-duration) var(--sy-ease);
+}
+
+.sy-table__table[data-loading] tbody {
+  opacity: 0.55;
+}
+
+.sy-table__table thead th {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: var(--sy-z-sticky);
+  padding: var(--sy-space-2) var(--sy-space-3);
+  background: var(--sy-surface);
+  color: var(--sy-ink-2);
+  font-size: var(--sy-text-sm);
+  font-weight: var(--sy-weight-medium);
+  text-align: start;
+  white-space: nowrap;
+}
+
+.sy-table__table :is(th, td)[data-align="end"] {
+  text-align: end;
+}
+
+.sy-table__sort {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sy-space-1);
+  min-block-size: var(--sy-target);
+  padding: 0 var(--sy-space-1);
+  margin-inline: calc(var(--sy-space-1) * -1);
+  border: 0;
+  border-radius: var(--sy-radius-sm);
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.sy-table__sort:hover {
+  color: var(--sy-ink);
+  background: var(--sy-sunken);
+}
+
+[aria-sort] > .sy-table__sort {
+  color: var(--sy-primary-ink);
+  font-weight: var(--sy-weight-strong);
+}
+
+.sy-table__table tbody :is(th, td) {
+  padding: var(--sy-space-3);
+  font-weight: var(--sy-weight-regular);
+  text-align: start;
+  vertical-align: middle;
+}
+
+.sy-table__table tbody th {
+  font-weight: var(--sy-weight-strong);
+}
+
+.sy-table__table tbody tr:nth-child(odd) > * {
+  background: var(--sy-sunken);
+}
+
+.sy-table__table tbody tr > :first-child {
+  border-start-start-radius: var(--sy-radius-md);
+  border-end-start-radius: var(--sy-radius-md);
+}
+
+.sy-table__table tbody tr > :last-child {
+  border-start-end-radius: var(--sy-radius-md);
+  border-end-end-radius: var(--sy-radius-md);
+}
+
+.sy-skeleton {
+  display: block;
+  block-size: 0.875rem;
+  inline-size: 70%;
+  border-radius: var(--sy-radius-pill);
+  background: var(--sy-neutral-soft);
+}
+
+.sy-table__empty {
+  margin: 0;
+  padding: var(--sy-space-6);
+  color: var(--sy-ink-2);
+  text-align: center;
+}
+
+.sy-table__pages {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--sy-space-3);
+  color: var(--sy-ink-2);
+  font-size: var(--sy-text-sm);
+}
+
+.sy-table__sortpick {
+  display: none;
+  align-items: center;
+  gap: var(--sy-space-2);
+  font-size: var(--sy-text-sm);
+  color: var(--sy-ink-2);
+}
+
+.sy-table__sortpick .sy-select {
+  flex: 1;
+}
+
+.sy-table {
+  container: sy-table-frame / inline-size;
+}
+
+/* Same width as the rows' switch to cards (the frame has no padding). */
+@container sy-table-frame (inline-size < 40rem) {
+  .sy-table__sortpick {
+    display: flex;
+    inline-size: 100%;
+  }
+}
+
+/* Narrow: each row a card, each cell labelled by its column. */
+@container sy-table (inline-size < 40rem) {
+  .sy-table__table,
+  .sy-table__table :is(thead, tbody, tr, th, td) {
+    display: block;
+  }
+
+  .sy-table__table thead {
+    display: none;
+  }
+
+  .sy-table__table tbody tr {
+    margin-block-end: var(--sy-space-2);
+    padding: var(--sy-space-3);
+    border-radius: var(--sy-radius-lg);
+    background: var(--sy-sunken);
+  }
+
+  .sy-table__table tbody tr > * {
+    background: none !important;
+    border-radius: 0 !important;
+    padding: var(--sy-space-1) 0;
+  }
+
+  .sy-table__table tbody :is(th, td)[data-align="end"] {
+    text-align: start;
+  }
+
+  .sy-table__table tbody td::before {
+    content: attr(data-label) " : ";
+    color: var(--sy-ink-2);
+    font-size: var(--sy-text-sm);
+  }
+
+  .sy-table__table tbody th {
+    font-size: var(--sy-text-lg);
+  }
+}
+
+@media (forced-colors: active) {
+  .sy-table {
+    border: 1px solid CanvasText;
+  }
+
+  .sy-table__table tbody tr > * {
+    border-block-end: 1px solid CanvasText;
+  }
+}

@@ -1,0 +1,7 @@
+node_modules/
+dist/
+storybook-static/
+test-results/
+playwright-report/
+apps/desktop/src-tauri/target/
+apps/desktop/src-tauri/gen/

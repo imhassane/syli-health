@@ -1,0 +1,138 @@
+.sy-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sy-space-2);
+  min-block-size: var(--sy-control-h);
+  min-inline-size: var(--sy-target);
+  padding: 0 var(--sy-space-5);
+  border: 0;
+  border-radius: var(--sy-radius-pill);
+  font-size: var(--sy-text-md);
+  font-weight: var(--sy-weight-strong);
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color var(--sy-duration) var(--sy-ease), box-shadow var(--sy-duration) var(--sy-ease);
+}
+
+.sy-button--sm {
+  min-block-size: var(--sy-control-h-sm);
+  padding-inline: var(--sy-space-4);
+  font-size: var(--sy-text-sm);
+}
+
+.sy-button--block {
+  inline-size: 100%;
+}
+
+.sy-button--primary {
+  background: var(--sy-primary);
+  color: var(--sy-on-primary);
+  box-shadow: var(--sy-shadow-primary);
+}
+
+.sy-button--primary:hover {
+  background: color-mix(in oklab, var(--sy-primary), var(--sy-ink) 12%);
+}
+
+.sy-button--soft {
+  background: var(--sy-surface);
+  color: var(--sy-ink);
+  box-shadow: var(--sy-shadow-soft);
+}
+
+.sy-button--soft:hover {
+  background: var(--sy-sunken);
+}
+
+.sy-button--outline {
+  background: transparent;
+  color: var(--sy-ink);
+  box-shadow: inset 0 0 0 1.5px var(--sy-edge);
+}
+
+.sy-button--ghost {
+  background: transparent;
+  color: var(--sy-primary-ink);
+}
+
+.sy-button--ghost:hover,
+.sy-button--outline:hover {
+  background: var(--sy-primary-soft);
+}
+
+.sy-button--danger {
+  background: var(--sy-danger);
+  color: var(--sy-on-danger);
+}
+
+.sy-button--danger-outline {
+  background: var(--sy-surface);
+  color: var(--sy-danger-ink);
+  box-shadow: inset 0 0 0 1.5px var(--sy-danger);
+}
+
+.sy-button--danger-outline:hover {
+  background: var(--sy-danger-soft);
+}
+
+.sy-button[aria-disabled="true"],
+.sy-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.sy-button__spinner {
+  inline-size: 1em;
+  block-size: 1em;
+  border: 2px solid currentColor;
+  border-inline-end-color: transparent;
+  border-radius: 50%;
+  animation: sy-spin calc(700ms / max(var(--sy-motion), 0.01)) linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sy-button__spinner {
+    animation: none;
+    border-inline-end-color: currentColor;
+    opacity: 0.5;
+  }
+}
+
+@keyframes sy-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+.sy-icon-button {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  inline-size: var(--sy-control-h);
+  block-size: var(--sy-control-h);
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--sy-ink-2);
+  cursor: pointer;
+}
+
+.sy-icon-button--soft {
+  background: var(--sy-surface);
+  box-shadow: var(--sy-shadow-soft);
+}
+
+.sy-icon-button:hover {
+  background: var(--sy-sunken);
+  color: var(--sy-ink);
+}
+
+@media (forced-colors: active) {
+  .sy-button,
+  .sy-icon-button {
+    border: 1px solid ButtonText;
+  }
+}

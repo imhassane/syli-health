@@ -1,0 +1,187 @@
+.sy-field {
+  display: grid;
+  gap: var(--sy-space-1);
+}
+
+.sy-field__label {
+  font-size: var(--sy-text-sm);
+  font-weight: var(--sy-weight-strong);
+  color: var(--sy-ink);
+}
+
+.sy-field__optional {
+  font-weight: var(--sy-weight-regular);
+  color: var(--sy-ink-3);
+}
+
+.sy-field__hint {
+  font-size: var(--sy-text-sm);
+  color: var(--sy-ink-2);
+}
+
+.sy-input {
+  box-sizing: border-box;
+  inline-size: 100%;
+  min-block-size: var(--sy-control-h);
+  padding: 0 var(--sy-space-4);
+  border: 1.5px solid var(--sy-edge);
+  border-radius: var(--sy-radius-md);
+  background: var(--sy-surface);
+  color: var(--sy-ink);
+  font-size: var(--sy-text-md);
+}
+
+.sy-input::placeholder {
+  color: var(--sy-ink-3);
+  opacity: 1;
+}
+
+.sy-input:focus-visible {
+  outline-offset: 0;
+  border-color: var(--sy-primary);
+}
+
+/* Invalid only after interaction, or when the server said so. */
+.sy-input:user-invalid,
+.sy-field[data-invalid] .sy-input {
+  border-color: var(--sy-danger);
+}
+
+.sy-field__error {
+  display: flex;
+  align-items: center;
+  gap: var(--sy-space-1);
+  font-size: var(--sy-text-sm);
+  font-weight: var(--sy-weight-medium);
+  color: var(--sy-danger-ink);
+}
+
+.sy-field__error[hidden] {
+  display: none;
+}
+
+.sy-select {
+  position: relative;
+  display: block;
+}
+
+.sy-select__control {
+  appearance: none;
+  padding-inline-end: 2.5rem;
+}
+
+.sy-select > .sy-icon {
+  position: absolute;
+  inset-inline-end: var(--sy-space-3);
+  inset-block-start: 50%;
+  translate: 0 -50%;
+  pointer-events: none;
+  color: var(--sy-ink-2);
+}
+
+/* Search: a pill, the magnifier inside. */
+.sy-search {
+  display: flex;
+  align-items: center;
+  gap: var(--sy-space-2);
+  min-block-size: var(--sy-control-h);
+  padding-inline: var(--sy-space-4) var(--sy-space-2);
+  border-radius: var(--sy-radius-pill);
+  background: var(--sy-surface);
+  box-shadow: inset 0 0 0 1.5px var(--sy-edge);
+  color: var(--sy-ink-2);
+}
+
+.sy-search:focus-within {
+  box-shadow: inset 0 0 0 2px var(--sy-primary);
+}
+
+.sy-search__input {
+  flex: 1;
+  min-inline-size: 0;
+  min-block-size: var(--sy-control-h);
+  border: 0;
+  background: none;
+  color: var(--sy-ink);
+  font-size: var(--sy-text-md);
+}
+
+.sy-search__input:focus-visible {
+  outline: none;
+}
+
+.sy-search__input::placeholder {
+  color: var(--sy-ink-3);
+  opacity: 1;
+}
+
+.sy-kbd {
+  padding: 0.25rem 0.625rem;
+  border-radius: var(--sy-radius-pill);
+  background: var(--sy-sunken);
+  color: var(--sy-ink-2);
+  font: inherit;
+  font-size: var(--sy-text-xs);
+  font-weight: var(--sy-weight-strong);
+}
+
+/* Checkbox and switch: the label is the hit area (24 px, 44 px on touch). */
+.sy-check {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sy-space-3);
+  min-block-size: var(--sy-target);
+  cursor: pointer;
+  font-size: var(--sy-text-md);
+}
+
+.sy-check__input {
+  inline-size: 20px;
+  block-size: 20px;
+  margin: 0;
+  accent-color: var(--sy-primary);
+}
+
+.sy-check--switch .sy-check__input {
+  appearance: none;
+  position: relative;
+  inline-size: 40px;
+  block-size: 24px;
+  border-radius: var(--sy-radius-pill);
+  background: var(--sy-edge);
+  transition: background-color var(--sy-duration) var(--sy-ease);
+}
+
+.sy-check--switch .sy-check__input::after {
+  content: "";
+  position: absolute;
+  inset-block-start: 3px;
+  inset-inline-start: 3px;
+  inline-size: 18px;
+  block-size: 18px;
+  border-radius: 50%;
+  background: var(--sy-surface);
+  transition: translate var(--sy-duration) var(--sy-ease);
+}
+
+.sy-check--switch .sy-check__input:checked {
+  background: var(--sy-primary);
+}
+
+.sy-check--switch .sy-check__input:checked::after {
+  translate: 16px 0;
+}
+
+.sy-check--switch .sy-check__input:checked:dir(rtl)::after {
+  translate: -16px 0;
+}
+
+@media (forced-colors: active) {
+  .sy-check--switch .sy-check__input {
+    border: 1px solid ButtonText;
+  }
+
+  .sy-check--switch .sy-check__input:checked {
+    background: Highlight;
+  }
+}

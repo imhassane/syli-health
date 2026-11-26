@@ -1,0 +1,60 @@
+/* The app's frame only: everything else comes from @syli/ui. */
+body {
+  margin: 0;
+}
+
+.app {
+  min-block-size: 100dvh;
+  background: var(--sy-bg);
+  color: var(--sy-ink);
+}
+
+.app__bar {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sy-space-3);
+  padding: var(--sy-space-3) max(var(--sy-space-5), env(safe-area-inset-left));
+  background: var(--sy-surface);
+  box-shadow: var(--sy-shadow-soft);
+}
+
+.app__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sy-space-2);
+  margin-inline-end: auto;
+  color: inherit;
+  font-size: var(--sy-text-lg);
+  text-decoration: none;
+}
+
+.app__main {
+  display: grid;
+  gap: var(--sy-space-5);
+  max-inline-size: 80rem;
+  margin-inline: auto;
+  padding: var(--sy-space-5);
+  padding-block-end: max(var(--sy-space-6), env(safe-area-inset-bottom));
+}
+
+.app__title {
+  margin: 0;
+  font-size: var(--sy-text-2xl);
+  font-weight: var(--sy-weight-strong);
+}
+
+.app__form {
+  display: grid;
+  gap: var(--sy-space-4);
+}
+
+/* Phones: the brand and the theme on one line, the status under them. */
+@media (width < 40rem) {
+  .app__main {
+    padding: var(--sy-space-3);
+  }
+}

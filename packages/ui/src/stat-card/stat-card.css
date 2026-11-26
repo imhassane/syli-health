@@ -1,0 +1,103 @@
+.sy-stat-grid {
+  container: stats / inline-size;
+}
+
+/* By the frame's width, not the screen's: 4 in a row, else 2 × 2 (compact
+   when narrow). Never 3 + 1 left alone, never one card a screen high. */
+.sy-stat-grid__cells {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--sy-space-3);
+}
+
+@container stats (inline-size < 56rem) {
+  .sy-stat-grid__cells {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.sy-stat {
+  display: flex;
+  align-items: center;
+  gap: var(--sy-space-4);
+  padding: var(--sy-space-5);
+  border-radius: var(--sy-radius-lg);
+  background: var(--sy-tone-soft);
+  color: var(--sy-ink);
+}
+
+.sy-stat--info { --sy-tone-soft: var(--sy-primary-soft); --sy-tone-ink: var(--sy-primary-ink); }
+.sy-stat--success { --sy-tone-soft: var(--sy-success-soft); --sy-tone-ink: var(--sy-success-ink); }
+.sy-stat--warning { --sy-tone-soft: var(--sy-warning-soft); --sy-tone-ink: var(--sy-warning-ink); }
+.sy-stat--danger { --sy-tone-soft: var(--sy-danger-soft); --sy-tone-ink: var(--sy-danger-ink); }
+.sy-stat--violet { --sy-tone-soft: var(--sy-violet-soft); --sy-tone-ink: var(--sy-violet-ink); }
+.sy-stat--neutral { --sy-tone-soft: var(--sy-neutral-soft); --sy-tone-ink: var(--sy-neutral-ink); }
+
+.sy-stat__icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  inline-size: 44px;
+  block-size: 44px;
+  border-radius: 50%;
+  background: var(--sy-surface);
+  color: var(--sy-tone-ink);
+}
+
+.sy-stat__body {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  min-inline-size: 0;
+}
+
+.sy-stat__label {
+  order: 2;
+  font-size: var(--sy-text-sm);
+  color: var(--sy-ink-2);
+}
+
+.sy-stat__value {
+  order: 1;
+  margin: 0;
+  font-size: var(--sy-text-xl);
+  font-weight: var(--sy-weight-bold);
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+
+.sy-stat__note {
+  order: 3;
+  margin: 0;
+  font-size: var(--sy-text-xs);
+  font-weight: var(--sy-weight-strong);
+  color: var(--sy-tone-ink);
+}
+
+/* Narrow: the icon above, to leave the figure all the width. */
+
+
+@media (forced-colors: active) {
+  .sy-stat {
+    border: 1px solid CanvasText;
+  }
+}
+
+/* Narrow: two per row, the icon above the figure. */
+@container stats (inline-size < 36rem) {
+  .sy-stat {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--sy-space-2);
+    padding: var(--sy-space-4);
+  }
+
+  .sy-stat__icon {
+    inline-size: 36px;
+    block-size: 36px;
+  }
+
+  .sy-stat__value {
+    font-size: var(--sy-text-lg);
+  }
+}

@@ -1,0 +1,48 @@
+.sy-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sy-space-2);
+}
+
+.sy-filters__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sy-space-1);
+  min-block-size: var(--sy-control-h-sm);
+  padding: 0 var(--sy-space-4);
+  border: 0;
+  border-radius: var(--sy-radius-pill);
+  background: var(--sy-sunken);
+  color: var(--sy-ink);
+  font-size: var(--sy-text-sm);
+  font-weight: var(--sy-weight-strong);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.sy-filters__pill:hover {
+  background: var(--sy-primary-soft);
+}
+
+.sy-filters__pill[aria-pressed="true"] {
+  background: var(--sy-ink);
+  color: var(--sy-bg);
+}
+
+.sy-filters__count {
+  padding: 0 0.4rem;
+  border-radius: var(--sy-radius-pill);
+  background: color-mix(in oklab, currentColor 14%, transparent);
+  font-size: var(--sy-text-xs);
+}
+
+@media (forced-colors: active) {
+  .sy-filters__pill {
+    border: 1px solid ButtonText;
+  }
+
+  .sy-filters__pill[aria-pressed="true"] {
+    background: Highlight;
+    color: HighlightText;
+  }
+}

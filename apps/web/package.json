@@ -1,0 +1,25 @@
+{
+  "name": "@syli/web",
+  "private": true,
+  "type": "module",
+  "description": "Syli Pharmacie, client léger : PWA installable (téléphones, tablettes, ordinateurs). Le même build est embarqué par le client lourd (apps/desktop).",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview --port 4173",
+    "icons": "node scripts/icons.mjs"
+  },
+  "dependencies": {
+    "@syli/ui": "workspace:*",
+    "preact": "10.29.8",
+    "workbox-window": "7.4.1"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
+    "@playwright/test": "1.64.1",
+    "@preact/preset-vite": "2.10.6",
+    "typescript": "^5.9.3",
+    "vite": "8.3.5",
+    "vite-plugin-pwa": "2.0.0"
+  }
+}

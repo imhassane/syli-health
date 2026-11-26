@@ -1,0 +1,141 @@
+/*
+ * A dialog: centered on a computer and a tablet, a drawer from the bottom on
+ * a phone. Slides in with @starting-style, never fades (its text keeps its
+ * contrast at every moment). The page behind does not scroll.
+ */
+.sy-modal {
+  box-sizing: border-box;
+  inline-size: min(var(--sy-modal-w, 32rem), calc(100% - 2rem));
+  max-block-size: min(48rem, calc(100dvh - 2rem));
+  padding: 0;
+  border: 0;
+  border-radius: var(--sy-radius-xl);
+  background: var(--sy-surface);
+  color: var(--sy-ink);
+  box-shadow: var(--sy-shadow-pop);
+  transition: transform var(--sy-duration-slow) var(--sy-ease);
+}
+
+.sy-modal--sm { --sy-modal-w: 26rem; }
+.sy-modal--md { --sy-modal-w: 32rem; }
+.sy-modal--lg { --sy-modal-w: 44rem; }
+
+/* Only when open: a display on the dialog itself would show it closed. */
+.sy-modal[open] {
+  display: flex;
+  flex-direction: column;
+  transform: none;
+
+  @starting-style {
+    transform: translateY(12px);
+  }
+}
+
+.sy-modal:modal {
+  overscroll-behavior: contain;
+}
+
+.sy-modal::backdrop {
+  overflow: hidden;
+  overscroll-behavior: contain;
+  background: rgb(10 20 32 / 0.5);
+}
+
+.sy-modal__handle {
+  display: none;
+}
+
+.sy-modal__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sy-space-3);
+  padding: var(--sy-space-5) var(--sy-space-4) 0 var(--sy-space-6);
+}
+
+.sy-modal__title {
+  margin: 0;
+  padding-block-start: var(--sy-space-2);
+  font-size: var(--sy-text-xl);
+  font-weight: var(--sy-weight-strong);
+  line-height: 1.25;
+}
+
+.sy-modal__description {
+  margin: var(--sy-space-2) var(--sy-space-6) 0;
+  color: var(--sy-ink-2);
+}
+
+.sy-modal__body {
+  flex: 1;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: var(--sy-space-5) var(--sy-space-6);
+}
+
+.sy-modal__foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--sy-space-3);
+  padding: var(--sy-space-4) var(--sy-space-6) var(--sy-space-6);
+}
+
+.sy-modal__description + .sy-modal__foot {
+  padding-block-start: var(--sy-space-6);
+}
+
+/* A tablet held upright: a little wider, still centered, buttons in a row. */
+@media (min-width: 40.0625rem) and (max-width: 64rem) {
+  .sy-modal--lg {
+    --sy-modal-w: 40rem;
+  }
+}
+
+/* A phone: a drawer from the bottom, within the thumb's reach. */
+@media (max-width: 40rem) {
+  .sy-modal {
+    inline-size: 100%;
+    max-inline-size: 100%;
+    max-block-size: calc(100dvh - 3rem);
+    margin-block: auto 0;
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
+    padding-block-end: env(safe-area-inset-bottom);
+    touch-action: pan-y;
+  }
+
+  .sy-modal[open] {
+    @starting-style {
+      transform: translateY(100%);
+    }
+  }
+
+  .sy-modal__handle {
+    display: block;
+    flex: none;
+    inline-size: 40px;
+    block-size: 5px;
+    margin: var(--sy-space-3) auto 0;
+    border-radius: var(--sy-radius-pill);
+    background: var(--sy-edge);
+  }
+
+  .sy-modal__head {
+    padding-block-start: var(--sy-space-2);
+  }
+
+  .sy-modal__foot {
+    flex-direction: column-reverse;
+  }
+
+  .sy-modal__foot > * {
+    inline-size: 100%;
+  }
+}
+
+@media (forced-colors: active) {
+  .sy-modal {
+    border: 1px solid CanvasText;
+  }
+}

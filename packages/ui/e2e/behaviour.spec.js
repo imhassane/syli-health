@@ -1,0 +1,118 @@
+import { expect, test } from "@playwright/test";
+
+const story = (id, theme = "light") => `/iframe.html?id=${id}&viewMode=story&theme=${theme}`;
+
+test.describe("Modal", () => {
+  test("opens on the first field, traps focus, Escape gives focus back", async ({ page }) => {
+    await page.goto(story("superpositions-modal--closed"));
+    const opener = page.getByRole("button", { name: "Réception grossiste" }).first();
+    await opener.click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await expect(dialog.locator(":focus")).toHaveCount(1);
+    // A modal <dialog> makes the page inert: Tab goes round the dialog and
+    // out to the browser's own interface (body here), never to the page.
+    for (let i = 0; i < 12; i++) {
+      await page.keyboard.press("Tab");
+      const where = await page.evaluate(() => (document.activeElement?.closest("dialog") ? "dialog" : document.activeElement === document.body ? "browser" : "page"));
+      expect(where).not.toBe("page");
+    }
+    await page.keyboard.press("Escape");
+    await expect(dialog).toBeHidden();
+    await expect(opener).toBeFocused();
+  });
+
+  test("scrolling over it never reaches the page (overscroll contained)", async ({ page }) => {
+    await page.goto(story("superpositions-modal--form"));
+    await expect(page.getByRole("dialog")).toBeVisible();
+    const styles = await page.evaluate(() => {
+      const dialog = document.querySelector("dialog");
+      const backdrop = getComputedStyle(dialog, "::backdrop");
+      return [getComputedStyle(dialog).overscrollBehaviorY, backdrop.overflow, backdrop.overscrollBehaviorY];
+    });
+    expect(styles).toEqual(["contain", "hidden", "contain"]);
+  });
+});
+
+test.describe("Drawer on phones", () => {
+  test.skip(({ viewport }) => (viewport?.width ?? 1280) >= 640, "phones only");
+
+  test("sits on the bottom edge, full width, and a drag closes it", async ({ page }) => {
+    await page.goto(story("superpositions-modal--closed"));
+    const opener = page.getByRole("button", { name: "Réception grossiste" }).first();
+    await opener.click();
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await page.waitForTimeout(400);
+    const box = await dialog.boundingBox();
+    const viewport = page.viewportSize();
+    expect(Math.round(box.y + box.height)).toBeGreaterThanOrEqual(viewport.height - 1);
+    expect(Math.round(box.width)).toBeGreaterThanOrEqual(viewport.width - 1);
+    // A finger on the handle, dragged down 160px.
+    const h = await page.locator(".sy-modal__handle").boundingBox();
+    const cdp = await page.context().newCDPSession(page);
+    const x = h.x + h.width / 2;
+    const touch = (type, y) => cdp.send("Input.dispatchTouchEvent", { type, touchPoints: type === "touchEnd" ? [] : [{ x, y }] });
+    await touch("touchStart", h.y + 4);
+    for (let step = 1; step <= 8; step++) await touch("touchMove", h.y + 4 + step * 20);
+    await touch("touchEnd");
+    await expect(dialog).toBeHidden();
+  });
+});
+
+test.describe("Tablets and computers", () => {
+  test.skip(({ viewport }) => (viewport?.width ?? 0) < 640, "wide screens only");
+
+  test("the modal is a centred window, not a drawer", async ({ page }) => {
+    await page.goto(story("superpositions-modal--form"));
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await page.waitForTimeout(400);
+    const box = await dialog.boundingBox();
+    const viewport = page.viewportSize();
+    expect(box.y).toBeGreaterThan(8);
+    expect(box.width).toBeLessThan(viewport.width);
+  });
+});
+
+test.describe("Toasts", () => {
+  test("stack, unfold on hover, Escape closes the newest", async ({ page }) => {
+    await page.goto(story("superpositions-toast--stacked"));
+    const region = page.getByRole("region", { name: "Notifications" });
+    const toasts = region.locator(".sy-toast");
+    await expect(toasts.first()).toBeVisible();
+    const count = await toasts.count();
+    expect(count).toBeGreaterThan(1);
+    // The region is as tall as nothing (its toasts are placed absolutely):
+    // pointing at a toast enters it.
+    await toasts.last().hover();
+    await page.waitForTimeout(400);
+    const boxes = await Promise.all([count - 1, count - 2].map((i) => toasts.nth(i).boundingBox()));
+    expect(Math.abs(boxes[0].y - boxes[1].y)).toBeGreaterThan(30);
+    await toasts.last().getByRole("button", { name: /Fermer la notification/ }).focus();
+    await page.keyboard.press("Escape");
+    await expect(toasts).toHaveCount(count - 1);
+  });
+});
+
+test.describe("Data table", () => {
+  test("search, filter and sort from the keyboard; status said once", async ({ page }) => {
+    await page.goto(story("données-datatable--from-api"));
+    const table = page.getByRole("table");
+    await expect(table.locator("tbody tr").first()).toBeVisible();
+    await page.getByRole("searchbox").fill("amox");
+    await expect(page.getByRole("status").filter({ hasText: "résultat" })).toContainText(/résultat/);
+    const narrow = (page.viewportSize()?.width ?? 1280) < 700;
+    if (narrow) {
+      // Rows are cards: the sort is a select.
+      await page.getByRole("combobox", { name: "Trier par" }).selectOption({ index: 1 });
+    } else {
+      await expect(page.getByRole("combobox", { name: "Trier par" })).toBeHidden();
+      const sort = page.getByRole("columnheader").getByRole("button").first();
+      await sort.focus();
+      await page.keyboard.press("Enter");
+    }
+    await expect(page.locator("th[aria-sort]")).toHaveCount(1);
+    await expect(page.getByRole("status").filter({ hasText: "triés par" })).toHaveCount(1);
+  });
+});

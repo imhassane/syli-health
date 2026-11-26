@@ -1,0 +1,150 @@
+/*
+ * Syli Health tokens. Every visual value of the components comes from here.
+ *
+ * Light and dark: each colour is a pair resolved by light-dark(), declared on
+ * :root and on [data-theme] (light-dark() resolves where the variable is
+ * declared, so a forced theme must redeclare them). The page follows the
+ * system unless an element forces data-theme="light" | "dark".
+ *
+ * Every text pair is checked at 4.5:1 and every control edge at 3:1, in both
+ * schemes (see tokens.test.ts).
+ */
+:root,
+[data-theme] {
+  /* Surfaces */
+  --sy-bg: light-dark(#f4f8fb, #0e1722);
+  --sy-surface: light-dark(#ffffff, #16212e);
+  --sy-sunken: light-dark(#f1f5f9, #1c2836);
+  --sy-raised: light-dark(#ffffff, #1c2836);
+
+  /* Text */
+  --sy-ink: light-dark(#16283a, #e8eef5);
+  --sy-ink-2: light-dark(#4f6072, #b4c1cf);
+  --sy-ink-3: light-dark(#5b6b7f, #9aa9b9);
+
+  /* Edges: 3:1 against the surfaces, for fields, secondary buttons and focus. */
+  --sy-edge: light-dark(#7d8b9c, #6f8196);
+  --sy-hairline: light-dark(#e3e9f0, #26364a);
+
+  /* Brand */
+  --sy-primary: light-dark(#1a66c9, #7fb2f0);
+  --sy-on-primary: light-dark(#ffffff, #0b1a2b);
+  --sy-primary-ink: light-dark(#124f9e, #9cc5f5);
+  --sy-primary-soft: light-dark(#eaf2fc, #1d3452);
+  --sy-teal: #1fa386;
+
+  /* Status: an ink on its soft background. */
+  --sy-success-ink: light-dark(#0b5c48, #86e3c6);
+  --sy-success-soft: light-dark(#e3f5ef, #123a30);
+  --sy-warning-ink: light-dark(#7a4d08, #f3c77a);
+  --sy-warning-soft: light-dark(#fdf1dc, #3a2b10);
+  --sy-danger-ink: light-dark(#8a1f1f, #ffb1ac);
+  --sy-danger-soft: light-dark(#fff1f1, #3d1a1c);
+  --sy-danger: light-dark(#b42323, #ff8a84);
+  --sy-on-danger: light-dark(#ffffff, #2a0b0b);
+  --sy-violet-ink: light-dark(#4b3fa8, #cbc2ff);
+  --sy-violet-soft: light-dark(#efecfc, #2a2550);
+  --sy-neutral-ink: light-dark(#4f6072, #b4c1cf);
+  --sy-neutral-soft: light-dark(#edf2f7, #223142);
+
+  /* Type */
+  --sy-font: "IBM Plex Sans", "IBM Plex Sans Arabic", system-ui, sans-serif;
+  --sy-font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --sy-text-xs: 0.75rem;
+  --sy-text-sm: 0.8125rem;
+  --sy-text-md: 0.9375rem;
+  --sy-text-lg: 1.0625rem;
+  --sy-text-xl: 1.375rem;
+  --sy-text-2xl: 1.75rem;
+  --sy-weight-regular: 400;
+  --sy-weight-medium: 500;
+  --sy-weight-strong: 600;
+  --sy-weight-bold: 700;
+
+  /* Space (4 px grid) */
+  --sy-space-1: 0.25rem;
+  --sy-space-2: 0.5rem;
+  --sy-space-3: 0.75rem;
+  --sy-space-4: 1rem;
+  --sy-space-5: 1.25rem;
+  --sy-space-6: 1.5rem;
+  --sy-space-8: 2rem;
+
+  /* Shapes: soft and round, never a pill on what can wrap. */
+  --sy-radius-sm: 10px;
+  --sy-radius-md: 16px;
+  --sy-radius-lg: 24px;
+  --sy-radius-xl: 28px;
+  --sy-radius-pill: 999px;
+
+  /* Shadows: diffuse in light, a hairline does the work in dark. light-dark()
+     takes colours only, so the shadows switch through their colours. */
+  --sy-shadow-near: light-dark(rgb(22 40 58 / 0.03), transparent);
+  --sy-shadow-far: light-dark(rgb(22 40 58 / 0.08), transparent);
+  --sy-shadow-ring: light-dark(transparent, #26364a);
+  --sy-shadow-pop-color: light-dark(rgb(22 40 58 / 0.3), rgb(0 0 0 / 0.6));
+  --sy-shadow-primary-color: light-dark(rgb(26 102 201 / 0.55), transparent);
+  --sy-shadow-card: 0 2px 8px var(--sy-shadow-near), 0 16px 40px -12px var(--sy-shadow-far), 0 0 0 1px var(--sy-shadow-ring);
+  --sy-shadow-soft: 0 2px 10px var(--sy-shadow-far), 0 0 0 1px var(--sy-shadow-ring);
+  --sy-shadow-pop: 0 18px 40px -14px var(--sy-shadow-pop-color), 0 0 0 1px var(--sy-shadow-ring);
+  --sy-shadow-primary: 0 8px 20px -8px var(--sy-shadow-primary-color);
+
+  /* Controls: 24 px at least everywhere (WCAG 2.5.8), 44 px on touch screens. */
+  --sy-target: 24px;
+  --sy-control-h: 40px;
+  --sy-control-h-sm: 32px;
+
+  /* Motion: multiplied by 0 when the user asks for less. */
+  --sy-motion: 1;
+  --sy-duration: calc(180ms * var(--sy-motion));
+  --sy-duration-slow: calc(320ms * var(--sy-motion));
+  --sy-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* Toasts: dark card in both schemes, stacked after Sonner (from fulbhefuuta). */
+  --sy-toast-w: 23.75rem;
+  --sy-toast-bg: #0f1c2a;
+  --sy-toast-fg: #ffffff;
+  --sy-toast-soft: #c9d3df;
+  --sy-toast-ok: #1fa386;
+  --sy-toast-badge: rgb(255 255 255 / 0.14);
+  --sy-toast-close-hover: rgb(255 255 255 / 0.12);
+  --sy-toast-error-bg: #9b1c1c;
+  --sy-toast-error-soft: #fbdcd9;
+  --sy-toast-shadow: 0 0.9rem 2rem -0.8rem rgb(0 0 0 / 0.45);
+  --sy-toast-gap: 0.625rem;
+  --sy-toast-peek: 0.75rem;
+  --sy-toast-shrink: 0.05;
+  --sy-toast-stack: 3;
+  --sy-ease-toast: cubic-bezier(0.21, 1.02, 0.73, 1);
+  --sy-duration-toast: calc(420ms * var(--sy-motion));
+
+  /* Layers */
+  --sy-z-sticky: 2;
+  --sy-z-toast: 80;
+
+  color-scheme: light dark;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+@media (pointer: coarse) {
+  :root,
+  [data-theme] {
+    --sy-target: 44px;
+    --sy-control-h: 44px;
+    --sy-control-h-sm: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root,
+  [data-theme] {
+    --sy-motion: 0;
+  }
+}

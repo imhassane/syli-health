@@ -1,0 +1,15 @@
+{
+  "name": "@syli/desktop",
+  "private": true,
+  "type": "module",
+  "description": "Syli Pharmacie, client lourd pour PC (Windows, macOS, Linux) : le build de apps/web dans une fenêtre Tauri.",
+  "scripts": {
+    "tauri": "tauri",
+    "dev": "tauri dev",
+    "build": "tauri build",
+    "icons": "tauri icon src-tauri/app-icon.png"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "2.12.6"
+  }
+}

@@ -6,10 +6,22 @@ const index = JSON.parse(readFileSync(new URL("../storybook-static/index.json", 
 const stories = Object.values(index.entries).filter((entry) => entry.type === "story");
 const tags = ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"];
 
-for (const theme of ["light", "dark"]) {
+// French and Arabic (right to left) in both schemes; English, Chinese and
+// Hindi in light: their words and scripts change widths, not colours.
+const runs = [
+  ["fr", "light"],
+  ["fr", "dark"],
+  ["ar", "light"],
+  ["ar", "dark"],
+  ["en", "light"],
+  ["zh", "light"],
+  ["hi", "light"],
+];
+
+for (const [locale, theme] of runs) {
   for (const entry of stories) {
-    test(`${entry.id} (${theme})`, async ({ page }) => {
-      await page.goto(`/iframe.html?id=${entry.id}&viewMode=story&theme=${theme}`);
+    test(`${entry.id} (${locale}, ${theme})`, async ({ page }) => {
+      await page.goto(`/iframe.html?id=${entry.id}&viewMode=story&theme=${theme}&locale=${locale}`);
       await page.locator("#storybook-root > *").first().waitFor();
       await page.waitForTimeout(350);
       // A loading story shows skeletons on purpose; others settle first.

@@ -33,7 +33,18 @@ export default defineConfig({
         globPatterns: ["**/*.{js,css,html,svg,png,woff2}"],
         // Fonts in scripts not written here load on demand (unicode-range):
         // precached, they would cost every phone their megabytes.
-        globIgnores: ["**/*{vietnamese,cyrillic,greek}*"],
+        // Chinese font declarations (assets/400-*.css, 600-*.css) and files
+        // too: only for those who choose Chinese, cached on first use.
+        globIgnores: ["**/*{vietnamese,cyrillic,greek,noto-sans-sc,devanagari}*", "**/assets/[0-9]00-*.css"],
+        // Chinese and Hindi fonts are cut by characters and fetched on
+        // demand: kept once fetched, so a page read once opens offline.
+        runtimeCaching: [
+          {
+            urlPattern: ({ url }) => /\/assets\/.*\.(woff2|css)$/.test(url.pathname),
+            handler: "CacheFirst",
+            options: { cacheName: "fonts", expiration: { maxEntries: 400 } },
+          },
+        ],
         navigateFallback: "/index.html",
         // The API is never served from the cache: the app keeps its own
         // offline data (local SQLite, synchronised in the background).

@@ -1,13 +1,14 @@
 import type { ComponentChildren } from "preact";
 import { useId } from "preact/hooks";
 import { Icon } from "../icon/Icon.tsx";
+import { useI18n } from "../i18n/I18n.tsx";
 
 export type Severity = "contraindication" | "caution" | "information";
 
-const severities: Record<Severity, { label: string; tone: string }> = {
-  contraindication: { label: "Contre-indication", tone: "danger" },
-  caution: { label: "Précaution d’emploi", tone: "danger" },
-  information: { label: "À prendre en compte", tone: "warning" },
+const severities: Record<Severity, { tone: string }> = {
+  contraindication: { tone: "danger" },
+  caution: { tone: "danger" },
+  information: { tone: "warning" },
 };
 
 export type ClinicalAlertProps = {
@@ -32,19 +33,24 @@ export type ClinicalAlertProps = {
 export function ClinicalAlert({ title, severity, reason, action, acknowledge, children }: ClinicalAlertProps) {
   const id = useId();
   const level = severities[severity];
+  const { t } = useI18n();
+  // The title goes inside the sentence where the language puts it.
+  const [before, after] = t("interaction", { title: "\u0000" }).split("\u0000");
   return (
     <section class={`sy-clinical sy-clinical--${level.tone}`} aria-labelledby={`${id}-title`} data-handled={acknowledge?.checked || undefined}>
       <span class="sy-clinical__icon" aria-hidden="true">
         <Icon name={acknowledge?.checked ? "check" : "warning"} size={22} />
       </span>
       <div class="sy-clinical__body">
-        <p class="sy-clinical__level">{level.label}</p>
+        <p class="sy-clinical__level">{t(severity)}</p>
         <h2 class="sy-clinical__title" id={`${id}-title`}>
-          Interaction : {title}
+          {before}
+          {title}
+          {after}
         </h2>
         <p class="sy-clinical__text">{reason}</p>
         <p class="sy-clinical__text">
-          <strong>À faire : </strong>
+          <strong>{t("whatToDo")}</strong>
           {action}
         </p>
         {(acknowledge || children) && (

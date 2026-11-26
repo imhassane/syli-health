@@ -1,9 +1,10 @@
 import {
-  Button,
   BlobField,
+  Button,
   ClinicalAlert,
-  Logo,
   DataTable,
+  I18nProvider,
+  Logo,
   Modal,
   Select,
   StatCard,
@@ -12,47 +13,30 @@ import {
   TextField,
   ThemeToggle,
   Toaster,
+  localeCodes,
+  locales,
   toast,
+  useI18n,
   type Column,
+  type Locale,
 } from "@syli/ui";
-import { gnf, type StockItem } from "@syli/ui/fixtures";
-import { useEffect, useState } from "preact/hooks";
+import { type StockItem } from "@syli/ui/fixtures";
+import { useEffect, useMemo, useState } from "preact/hooks";
 import { stockSource, usingApi } from "./api.ts";
-
-const status = {
-  out: <StatusPill tone="danger">Rupture</StatusPill>,
-  low: <StatusPill tone="warning">Stock faible</StatusPill>,
-  expiring: <StatusPill tone="violet">Péremption proche</StatusPill>,
-  ok: <StatusPill tone="success">Disponible</StatusPill>,
-};
-
-const columns: Column<StockItem>[] = [
-  { key: "dci", header: "Médicament", cell: (r) => r.dci, sortable: true, rowHeader: true },
-  { key: "qty", header: "Stock", cell: (r) => <span class="sy-num">{r.qty}</span>, sortable: true, align: "end" },
-  { key: "price", header: "Prix", cell: (r) => <span class="sy-num sy-ltr">{gnf(r.price)}</span>, sortable: true, align: "end" },
-  { key: "status", header: "Statut", cell: (r) => status[r.status] },
-];
-
-const filters = {
-  label: "Filtrer le stock",
-  options: [
-    { value: "all", label: "Tous" },
-    { value: "low", label: "Stocks faibles" },
-    { value: "out", label: "Ruptures" },
-    { value: "expiring", label: "Péremptions" },
-  ],
-};
+import { saveLocale } from "./locale.ts";
+import { useText } from "./text.ts";
 
 function useOnline() {
+  const text = useText();
   const [online, setOnline] = useState(navigator.onLine);
   useEffect(() => {
     const on = () => {
       setOnline(true);
-      toast.success("Réseau revenu", { id: "network", detail: "Synchronisation en cours." });
+      toast.success(text("networkBack"), { id: "network", detail: text("networkBackDetail") });
     };
     const off = () => {
       setOnline(false);
-      toast.warning("Hors ligne", { id: "network", duration: 0, detail: "Vous pouvez continuer à vendre : tout partira au retour du réseau." });
+      toast.warning(text("offline"), { id: "network", duration: 0, detail: text("offlineDetail") });
     };
     addEventListener("online", on);
     addEventListener("offline", off);
@@ -60,15 +44,64 @@ function useOnline() {
       removeEventListener("online", on);
       removeEventListener("offline", off);
     };
-  }, []);
+  }, [text]);
   return online;
 }
 
-export function App() {
+/** The language of the interface: a native select, each name in its own language. */
+function LanguagePicker({ value, onChange }: { value: Locale; onChange: (locale: Locale) => void }) {
+  const { t } = useI18n();
+  return (
+    <label class="app__language">
+      <span class="sy-visually-hidden">{t("language")}</span>
+      <span class="sy-select">
+        <select class="sy-input sy-select__control" value={value} onChange={(e) => onChange((e.currentTarget as HTMLSelectElement).value as Locale)}>
+          {localeCodes.map((code) => (
+            <option value={code} key={code} lang={locales[code].tag}>
+              {locales[code].name}
+            </option>
+          ))}
+        </select>
+      </span>
+    </label>
+  );
+}
+
+function Pharmacy({ locale, setLocale }: { locale: Locale; setLocale: (locale: Locale) => void }) {
+  const text = useText();
+  const { number, t } = useI18n();
   const online = useOnline();
   const [receiving, setReceiving] = useState(false);
   const [advised, setAdvised] = useState(false);
   const [product, setProduct] = useState<StockItem | null>(null);
+
+  const money = (n: number) => `${number(n)} GNF`;
+  const status = {
+    out: <StatusPill tone="danger">{text("statusOut")}</StatusPill>,
+    low: <StatusPill tone="warning">{text("statusLow")}</StatusPill>,
+    expiring: <StatusPill tone="violet">{text("statusExpiring")}</StatusPill>,
+    ok: <StatusPill tone="success">{text("statusOk")}</StatusPill>,
+  };
+  // Drug names are data, in French: read as French on any interface.
+  const columns: Column<StockItem>[] = useMemo(
+    () => [
+      { key: "dci", header: text("drug"), cell: (r) => r.dci, sortable: true, rowHeader: true, lang: locale === "fr" ? undefined : "fr" },
+      { key: "qty", header: text("quantity"), cell: (r) => <span class="sy-num">{number(r.qty)}</span>, sortable: true, align: "end" },
+      { key: "price", header: text("price"), cell: (r) => <span class="sy-num sy-ltr">{money(r.price)}</span>, sortable: true, align: "end" },
+      { key: "status", header: text("status"), cell: (r) => status[r.status] },
+    ],
+    [locale],
+  );
+  const filters = {
+    label: text("filterStock"),
+    options: [
+      { value: "all", label: text("all") },
+      { value: "low", label: text("low") },
+      { value: "out", label: text("out") },
+      { value: "expiring", label: text("expiring") },
+    ],
+  };
+  const fr = locale === "fr" ? undefined : "fr";
 
   return (
     <div class="app">
@@ -77,55 +110,86 @@ export function App() {
         <a class="app__brand" href="/">
           <Logo product="pharmacie" size="2.25rem" />
         </a>
-        <StatusPill tone={online ? "success" : "warning"}>{online ? "En ligne" : "Hors ligne"}</StatusPill>
+        <StatusPill tone={online ? "success" : "warning"}>{online ? text("online") : text("offline")}</StatusPill>
+        <LanguagePicker value={locale} onChange={setLocale} />
         <ThemeToggle />
       </header>
 
       <main class="app__main">
-        <h1 class="app__title">Pharmacie du Niger · Kaloum</h1>
+        <h1 class="app__title" lang={fr}>
+          Pharmacie du Niger · Kaloum
+        </h1>
 
-        <StatGrid label="Aujourd’hui">
-          <StatCard label="Ventes du jour" value="4,87 M GNF" note="+12 % sur hier" icon="money" />
-          <StatCard label="Ordonnances" value="38" note="dont 6 renouvellements" icon="rx" tone="violet" />
-          <StatCard label="Réservations à préparer" value="5" note="2 payées en ligne" icon="bag" tone="success" />
-          <StatCard label="Ruptures" value="3" note="Amoxicilline 500 mg…" icon="warning" tone="danger" />
+        <StatGrid label={text("today")}>
+          <StatCard label={text("sales")} value={<span class="sy-ltr">{number(4.87, { maximumFractionDigits: 2 })} M GNF</span>} note={text("salesNote")} icon="money" />
+          <StatCard label={text("prescriptions")} value={number(38)} note={text("prescriptionsNote")} icon="rx" tone="violet" />
+          <StatCard label={text("reservations")} value={number(5)} note={text("reservationsNote")} icon="bag" tone="success" />
+          <StatCard label={text("stockouts")} value={number(3)} note={<span lang={fr}>Amoxicilline 500 mg…</span>} icon="warning" tone="danger" />
         </StatGrid>
 
         <ClinicalAlert
           severity="caution"
-          title="ciprofloxacine + glibenclamide"
-          reason="Les fluoroquinolones peuvent provoquer une hypoglycémie chez les patients traités par sulfamide hypoglycémiant."
-          action="prévenir le patient et renforcer l’autosurveillance de la glycémie."
-          acknowledge={{ label: "Conseil donné au patient", checked: advised, onChange: setAdvised }}
+          title={<span lang={fr}>ciprofloxacine + glibenclamide</span>}
+          reason={text("alertReason")}
+          action={text("alertAction")}
+          acknowledge={{ label: text("advised"), checked: advised, onChange: setAdvised }}
         />
 
         <DataTable
-          caption={usingApi ? "Produits en stock" : "Produits en stock (démonstration)"}
+          key={locale}
+          caption={usingApi ? text("stock") : text("stockDemo")}
           columns={columns}
           source={stockSource}
           rowKey={(r) => r.id}
-          searchLabel="Rechercher dans le stock"
-          searchPlaceholder="DCI, nom commercial, lot…"
+          searchLabel={text("searchStock")}
+          searchPlaceholder={text("searchHint")}
           filters={filters}
           onOpen={setProduct}
           actions={
             <Button size="sm" variant="primary" icon="plus" onClick={() => setReceiving(true)}>
-              Réception
+              {text("reception")}
             </Button>
           }
         />
       </main>
 
       <Modal
+        open={product !== null}
+        onClose={() => setProduct(null)}
+        title={<span lang={fr}>{product?.dci}</span>}
+        description={product ? text("brand", { brand: product.brand }) : undefined}
+        footer={
+          <Button variant="primary" onClick={() => setProduct(null)}>
+            {t("close")}
+          </Button>
+        }
+      >
+        {product && (
+          <dl class="sy-facts">
+            <dt>{text("quantity")}</dt>
+            <dd class="sy-num">{number(product.qty)}</dd>
+            <dt>{text("nextLot")}</dt>
+            <dd class="sy-ltr">{product.lot}</dd>
+            <dt>{text("expiry")}</dt>
+            <dd class="sy-ltr">{product.expires ? product.expires.split("-").reverse().join("/") : "—"}</dd>
+            <dt>{text("price")}</dt>
+            <dd class="sy-num sy-ltr">{money(product.price)}</dd>
+            <dt>{text("status")}</dt>
+            <dd>{status[product.status]}</dd>
+          </dl>
+        )}
+      </Modal>
+
+      <Modal
         open={receiving}
         onClose={() => setReceiving(false)}
-        title="Réception grossiste"
-        description="Le bon de livraison met le stock à jour, lot par lot."
+        title={text("receptionTitle")}
+        description={text("receptionDescription")}
         footer={
           <>
-            <Button onClick={() => setReceiving(false)}>Annuler</Button>
+            <Button onClick={() => setReceiving(false)}>{t("cancel")}</Button>
             <Button variant="primary" type="submit" form="reception">
-              Enregistrer
+              {text("save")}
             </Button>
           </>
         }
@@ -137,46 +201,37 @@ export function App() {
             event.preventDefault();
             const data = new FormData(event.currentTarget);
             setReceiving(false);
-            toast.success("Réception enregistrée", { detail: `Bon ${data.get("slip")} · ${data.get("supplier")}` });
+            toast.success(text("received"), { detail: text("receivedDetail", { slip: String(data.get("slip")), supplier: String(data.get("supplier")) }) });
           }}
         >
-          <Select label="Grossiste" name="supplier" required error="Choisissez le grossiste.">
-            <option value="">Choisir…</option>
+          <Select label={text("supplier")} name="supplier" required error={text("supplierError")}>
+            <option value="">{text("choose")}</option>
             <option>Laborex Guinée</option>
             <option>Pharmaguinée</option>
           </Select>
-          <TextField label="Numéro de bon de livraison" name="slip" required error="Indiquez le numéro du bon." autoFocus />
+          <TextField label={text("slip")} name="slip" required error={text("slipError")} autoFocus />
         </form>
-      </Modal>
-
-      <Modal
-        open={product !== null}
-        onClose={() => setProduct(null)}
-        title={product?.dci ?? ""}
-        description={product ? `Nom commercial : ${product.brand}` : undefined}
-        footer={
-          <Button variant="primary" onClick={() => setProduct(null)}>
-            Fermer
-          </Button>
-        }
-      >
-        {product && (
-          <dl class="sy-facts">
-            <dt>Stock</dt>
-            <dd class="sy-num">{product.qty}</dd>
-            <dt>Prochain lot</dt>
-            <dd class="sy-ltr">{product.lot}</dd>
-            <dt>Péremption</dt>
-            <dd>{product.expires ? product.expires.split("-").reverse().join("/") : "—"}</dd>
-            <dt>Prix</dt>
-            <dd class="sy-num sy-ltr">{gnf(product.price)}</dd>
-            <dt>Statut</dt>
-            <dd>{status[product.status]}</dd>
-          </dl>
-        )}
       </Modal>
 
       <Toaster />
     </div>
+  );
+}
+
+export function App({ initialLocale }: { initialLocale: Locale }) {
+  const [locale, setLocale] = useState(initialLocale);
+  useEffect(() => {
+    document.documentElement.dataset.locale = locale;
+  }, [locale]);
+  return (
+    <I18nProvider locale={locale}>
+      <Pharmacy
+        locale={locale}
+        setLocale={(next) => {
+          saveLocale(next);
+          setLocale(next);
+        }}
+      />
+    </I18nProvider>
   );
 }

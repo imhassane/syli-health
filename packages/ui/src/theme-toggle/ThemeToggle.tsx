@@ -1,4 +1,5 @@
 import { useState } from "preact/hooks";
+import { useI18n } from "../i18n/I18n.tsx";
 
 export type Theme = "system" | "light" | "dark";
 const key = "syli.theme";
@@ -28,7 +29,8 @@ export function restoreTheme() {
  * The theme of this device: system (default), light or dark. A choice of
  * three radios in a group, remembered on the device.
  */
-export function ThemeToggle({ label = "Thème" }: { label?: string }) {
+export function ThemeToggle({ label }: { label?: string }) {
+  const { t } = useI18n();
   const [theme, setThemeState] = useState<Theme>(read);
   const setTheme = (next: Theme) => {
     setThemeState(next);
@@ -41,13 +43,13 @@ export function ThemeToggle({ label = "Thème" }: { label?: string }) {
     }
   };
   const options: [Theme, string][] = [
-    ["system", "Système"],
-    ["light", "Clair"],
-    ["dark", "Sombre"],
+    ["system", t("themeSystem")],
+    ["light", t("themeLight")],
+    ["dark", t("themeDark")],
   ];
   return (
     <fieldset class="sy-theme">
-      <legend class="sy-theme__legend">{label}</legend>
+      <legend class="sy-theme__legend">{label ?? t("theme")}</legend>
       {options.map(([value, text]) => (
         <label class="sy-theme__option" key={value}>
           <input type="radio" name="sy-theme" value={value} checked={theme === value} onChange={() => setTheme(value)} />

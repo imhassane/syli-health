@@ -1,6 +1,7 @@
 import type { ComponentChildren } from "preact";
 import { Icon, type IconName } from "../icon/Icon.tsx";
 import { Skeleton } from "../skeleton/Skeleton.tsx";
+import { useI18n } from "../i18n/I18n.tsx";
 import type { Tone } from "../status-pill/StatusPill.tsx";
 
 export type StatCardProps = {
@@ -19,6 +20,7 @@ export type StatCardProps = {
  * then the value, then its note (a description list keeps them together).
  */
 export function StatCard({ label, value, note, icon, tone = "info", loading = false }: StatCardProps) {
+  const { t } = useI18n();
   return (
     <div class={`sy-stat sy-stat--${tone}`} aria-busy={loading || undefined}>
       <span class="sy-stat__icon">
@@ -29,7 +31,7 @@ export function StatCard({ label, value, note, icon, tone = "info", loading = fa
         {loading ? (
           <dd class="sy-stat__value">
             <Skeleton width="6rem" height="1.5rem" />
-            <span class="sy-visually-hidden">Chargement…</span>
+            <span class="sy-visually-hidden">{t("loading")}</span>
           </dd>
         ) : (
           <>

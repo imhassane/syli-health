@@ -66,3 +66,10 @@ body {
     padding: var(--sy-space-3);
   }
 }
+
+/* The language: a compact select in the bar. */
+.app__language .sy-select__control {
+  min-block-size: var(--sy-control-h-sm);
+  padding-block: 0;
+  font-size: var(--sy-text-sm);
+}

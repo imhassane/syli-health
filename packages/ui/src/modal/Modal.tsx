@@ -1,6 +1,7 @@
 import type { ComponentChildren } from "preact";
 import { useEffect, useId, useRef } from "preact/hooks";
 import { Button, IconButton } from "../button/Button.tsx";
+import { useI18n } from "../i18n/I18n.tsx";
 
 export type ModalProps = {
   /** Shown as a modal while true. */
@@ -34,7 +35,8 @@ const isDrawer = () => window.matchMedia?.("(max-width: 40rem)").matches ?? fals
  * drawer from the bottom on a phone, which a finger drags down to close (its
  * close button does the same: WCAG 2.5.1). The page behind never scrolls.
  */
-export function Modal({ open, onClose, title, description, children, footer, size = "md", dismissible = true, closeLabel = "Fermer" }: ModalProps) {
+export function Modal({ open, onClose, title, description, children, footer, size = "md", dismissible = true, closeLabel }: ModalProps) {
+  const { t } = useI18n();
   const ref = useRef<HTMLDialogElement>(null);
   const id = useId();
   const close = useRef(onClose);
@@ -141,7 +143,7 @@ export function Modal({ open, onClose, title, description, children, footer, siz
             <h1 class="sy-modal__title" id={`${id}-title`}>
               {title}
             </h1>
-            <IconButton icon="close" label={closeLabel} onClick={() => close.current()} />
+            <IconButton icon="close" label={closeLabel ?? t("close")} onClick={() => close.current()} />
           </header>
           {description && (
             <p class="sy-modal__description" id={`${id}-description`}>
@@ -173,7 +175,8 @@ export type ConfirmDialogProps = {
  * focus, so Enter never destroys by accident; the costly one says what it
  * does ("Supprimer le lot", never "OK").
  */
-export function ConfirmDialog({ open, title, description, confirmLabel, cancelLabel = "Annuler", tone = "default", onConfirm, onCancel }: ConfirmDialogProps) {
+export function ConfirmDialog({ open, title, description, confirmLabel, cancelLabel, tone = "default", onConfirm, onCancel }: ConfirmDialogProps) {
+  const { t } = useI18n();
   return (
     <Modal
       open={open}
@@ -185,7 +188,7 @@ export function ConfirmDialog({ open, title, description, confirmLabel, cancelLa
       footer={
         <>
           <Button variant="soft" onClick={onCancel} autoFocus>
-            {cancelLabel}
+            {cancelLabel ?? t("cancel")}
           </Button>
           <Button variant={tone === "danger" ? "danger" : "primary"} onClick={onConfirm}>
             {confirmLabel}

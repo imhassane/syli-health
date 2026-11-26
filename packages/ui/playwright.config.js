@@ -8,7 +8,7 @@ const chrome = process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PA
 export default defineConfig({
   testDir: "e2e",
   reporter: [["list"]],
-  workers: 4,
+  workers: 6,
   use: { baseURL: "http://localhost:6007", launchOptions: chrome },
   projects: [
     { name: "telephone", use: { ...devices["Pixel 7"], launchOptions: chrome } },

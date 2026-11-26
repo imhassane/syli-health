@@ -2,6 +2,7 @@ import type { ComponentChildren, JSX } from "preact";
 import { useEffect, useId, useRef, useState } from "preact/hooks";
 import { announce } from "../announce/announce.ts";
 import { Icon } from "../icon/Icon.tsx";
+import { useI18n } from "../i18n/I18n.tsx";
 
 type Control = HTMLInputElement | HTMLSelectElement;
 
@@ -13,6 +14,7 @@ type Control = HTMLInputElement | HTMLSelectElement;
  * `invalid`) is shown at once.
  */
 function useUserInvalid(ref: { current: Control | null }, serverInvalid: boolean) {
+  const { t } = useI18n();
   const [invalid, setInvalid] = useState(serverInvalid);
   useEffect(() => setInvalid(serverInvalid), [serverInvalid]);
   useEffect(() => {
@@ -37,7 +39,7 @@ function useUserInvalid(ref: { current: Control | null }, serverInvalid: boolean
         if (now && !before && announceIt) {
           const label = el.labels?.[0]?.textContent ?? "";
           const message = el.dataset.errorText ?? "";
-          announce(`${label} : ${message}`, { delay: 500 });
+          announce(t("fieldError", { label, message }), { delay: 500 });
         }
         return now;
       });
@@ -72,11 +74,12 @@ type FieldFrameProps = {
 };
 
 function FieldFrame({ id, label, hint, error, invalid, optional, children }: FieldFrameProps) {
+  const { t } = useI18n();
   return (
     <div class="sy-field" data-invalid={invalid || undefined}>
       <label class="sy-field__label" for={id}>
         {label}
-        {optional && <span class="sy-field__optional"> (facultatif)</span>}
+        {optional && <span class="sy-field__optional">{" " + t("optional")}</span>}
       </label>
       {hint && (
         <span class="sy-field__hint" id={`${id}-hint`}>

@@ -58,7 +58,7 @@
   --sy-skeleton-shine: light-dark(#f3f6f9, #364a62);
 
   /* Type */
-  --sy-font: "IBM Plex Sans", "IBM Plex Sans Arabic", system-ui, sans-serif;
+  --sy-font: "IBM Plex Sans", "IBM Plex Sans Arabic", "IBM Plex Sans Devanagari", "Noto Sans SC", system-ui, sans-serif;
   --sy-font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
   --sy-text-xs: 0.75rem;
   --sy-text-sm: 0.8125rem;

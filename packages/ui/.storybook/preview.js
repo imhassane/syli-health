@@ -1,4 +1,7 @@
+import { h } from "preact";
 import "../src/styles.css";
+import { I18nProvider, loadFonts } from "../src/i18n/I18n.tsx";
+import { isLocale, locales } from "../src/i18n/locales.ts";
 
 export default {
   parameters: {
@@ -11,21 +14,26 @@ export default {
       description: "Thème",
       toolbar: { icon: "contrast", items: [{ value: "system", title: "Système" }, { value: "light", title: "Clair" }, { value: "dark", title: "Sombre" }] },
     },
-    direction: {
-      description: "Sens du texte",
-      toolbar: { icon: "transfer", items: ["ltr", "rtl"] },
+    locale: {
+      description: "Langue (l'arabe passe de droite à gauche)",
+      toolbar: { icon: "globe", items: Object.entries(locales).map(([value, { name }]) => ({ value, title: name })) },
     },
   },
-  initialGlobals: { theme: "system", direction: "ltr" },
+  initialGlobals: { theme: "system", locale: "fr" },
   decorators: [
     (Story, context) => {
       const root = document.documentElement;
-      const theme = new URLSearchParams(location.search).get("theme") ?? context.globals.theme;
+      const params = new URLSearchParams(location.search);
+      const theme = params.get("theme") ?? context.globals.theme;
       if (theme === "light" || theme === "dark") root.dataset.theme = theme;
       else delete root.dataset.theme;
-      root.dir = context.globals.direction ?? "ltr";
-      root.lang = "fr";
-      return Story();
+      // ?locale= for the browser audits, else the toolbar.
+      const asked = params.get("locale") ?? context.globals.locale;
+      const locale = isLocale(asked) ? asked : "fr";
+      root.lang = locales[locale].tag;
+      root.dir = locales[locale].dir;
+      loadFonts(locale);
+      return h(I18nProvider, { locale }, Story());
     },
   ],
 };

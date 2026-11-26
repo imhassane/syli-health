@@ -47,3 +47,30 @@ test("installable: manifest and service worker", async ({ page, request }) => {
   const sw = await page.evaluate(async () => (await navigator.serviceWorker.ready).active?.scriptURL);
   expect(sw).toMatch(/sw\.js$/);
 });
+
+test("opens in the visitor's language, keeps the one chosen, Arabic right to left", async ({ browser }) => {
+  const context = await browser.newContext({ locale: "zh-CN" });
+  const page = await context.newPage();
+  await page.goto("/");
+  await expect(page.getByRole("button", { name: "收货" })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.lang)).toBe("zh-Hans");
+  await page.getByRole("combobox", { name: "语言" }).selectOption("ar");
+  await expect(page.getByRole("button", { name: "استلام" })).toBeVisible();
+  expect(await page.evaluate(() => [document.documentElement.lang, document.documentElement.dir])).toEqual(["ar", "rtl"]);
+  await page.reload();
+  expect(await page.evaluate(() => document.documentElement.dir)).toBe("rtl");
+  await context.close();
+});
+
+for (const locale of ["en", "zh", "hi", "ar"]) {
+  test(`home in ${locale}: axe, no sideways scroll`, async ({ page }, info) => {
+    await page.addInitScript((l) => localStorage.setItem("syli.locale", l), locale);
+    await page.goto("/");
+    await expect(page.locator("tbody th").first()).toBeVisible();
+    await page.waitForTimeout(300);
+    const { violations } = await new AxeBuilder({ page }).withTags(tags).analyze();
+    expect(violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`)).toEqual([]);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1)).toBe(false);
+    await page.screenshot({ path: `test-results/home-${info.project.name}-${locale}.png` });
+  });
+}

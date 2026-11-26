@@ -1,4 +1,5 @@
 import { Icon } from "../icon/Icon.tsx";
+import { useI18n } from "../i18n/I18n.tsx";
 
 export type PatientBannerProps = {
   name: string;
@@ -13,7 +14,6 @@ export type PatientBannerProps = {
   today?: Date;
 };
 
-const sexLabel = { F: "Femme", M: "Homme" };
 
 export function ageOn(birthDate: string, today = new Date()) {
   const birth = new Date(`${birthDate}T00:00:00`);
@@ -35,25 +35,29 @@ export function PatientBanner({ name, sex, birthDate, recordId, weightKg, allerg
     .slice(0, 2)
     .join("")
     .toUpperCase();
-  const birth = new Date(`${birthDate}T00:00:00`).toLocaleDateString("fr-FR");
+  const { t, plural, date, number } = useI18n();
+  const born = date(birthDate, { dateStyle: "short" });
   return (
-    <section class="sy-patient" aria-label={`Patient : ${name}`}>
+    <section class="sy-patient" aria-label={t("patient", { name })}>
       <span class="sy-patient__avatar" aria-hidden="true">
         {initials}
       </span>
       <div class="sy-patient__id">
         <h2 class="sy-patient__name">{name}</h2>
         <p class="sy-patient__facts">
-          {sexLabel[sex]} · {ageOn(birthDate, today)} ans · né{sex === "F" ? "e" : ""} le {birth} · dossier <span class="sy-ltr">{recordId}</span>
-          {weightKg !== undefined && <> · {weightKg} kg</>}
+          {t(sex === "F" ? "female" : "male")} · {plural("age", ageOn(birthDate, today))} · {t(sex === "F" ? "bornFemale" : "bornMale", { date: born })} ·{" "}
+          {t("record", { id: "\u0000" }).split("\u0000")[0]}
+          <bdi class="sy-ltr">{recordId}</bdi>
+          {t("record", { id: "\u0000" }).split("\u0000")[1]}
+          {weightKg !== undefined && <> · <span class="sy-ltr">{number(weightKg, { style: "unit", unit: "kilogram" })}</span></>}
         </p>
       </div>
       {(allergies.length > 0 || conditions.length > 0) && (
-        <ul class="sy-patient__flags" aria-label="Allergies et pathologies">
+        <ul class="sy-patient__flags" aria-label={t("allergiesAndConditions")}>
           {allergies.map((allergy) => (
             <li class="sy-pill sy-pill--danger" key={allergy}>
               <Icon name="alert" size={14} />
-              Allergie : {allergy}
+              {t("allergy", { name: allergy })}
             </li>
           ))}
           {conditions.map((condition) => (

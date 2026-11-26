@@ -21,7 +21,7 @@ export const fold = (text: string) =>
   text
     .normalize("NFKD")
     .replace(/\p{Diacritic}/gu, "")
-    .toLocaleLowerCase("fr");
+    .toLocaleLowerCase();
 
 /**
  * A source over rows already in memory (the local SQLite of the counter, a
@@ -33,13 +33,16 @@ export function localSource<Row>(
     text,
     filter = () => true,
     sortValue = (row, key) => (row as Record<string, unknown>)[key] as string | number,
+    locale = "fr",
   }: {
     text: (row: Row) => string;
+    /** The language the rows' text is sorted in (BCP 47). */
+    locale?: string;
     filter?: (row: Row, value: string) => boolean;
     sortValue?: (row: Row, key: string) => string | number | Date | null | undefined;
   },
 ): DataSource<Row> {
-  const collator = new Intl.Collator("fr", { numeric: true, sensitivity: "base" });
+  const collator = new Intl.Collator(locale, { numeric: true, sensitivity: "base" });
   return async (query) => {
     const words = fold(query.search).split(/\s+/).filter(Boolean);
     let found = rows.filter((row) => {

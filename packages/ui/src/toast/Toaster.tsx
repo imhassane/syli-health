@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "preact/hooks";
 import { announce } from "../announce/announce.ts";
 import { Icon, type IconName } from "../icon/Icon.tsx";
+import { useI18n } from "../i18n/I18n.tsx";
 import { subscribe, toast, type ToastItem, type ToastKind } from "./toast-store.ts";
 
 const badges: Record<ToastKind, IconName> = { success: "check", error: "alert", warning: "warning", info: "info", loading: "refresh" };
@@ -42,7 +43,8 @@ const modalOpen = () => {
  * focused one goes. Held back while a modal dialog is open (the page behind
  * is inert and the news would be missed), shown when it closes.
  */
-export function Toaster({ label = "Notifications", closeLabel = "Fermer la notification" }: { label?: string; closeLabel?: string }) {
+export function Toaster({ label, closeLabel }: { label?: string; closeLabel?: string }) {
+  const { t } = useI18n();
   const [items, setItems] = useState<ToastItem[]>([]);
   const [held, setHeld] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -97,7 +99,7 @@ export function Toaster({ label = "Notifications", closeLabel = "Fermer la notif
       const key = `${item.id}:${item.kind}:${item.title}`;
       if (announced.current.has(key)) continue;
       announced.current.add(key);
-      announce([item.title, item.detail, item.action && "Action disponible."].filter(Boolean).join(". "), { delay: 50 });
+      announce([item.title, item.detail, item.action && t("actionAvailable")].filter(Boolean).join(". "), { delay: 50 });
     }
   }, [visible]);
 
@@ -189,7 +191,7 @@ export function Toaster({ label = "Notifications", closeLabel = "Fermer la notif
     <section
       ref={region}
       class="sy-toasts"
-      aria-label={label}
+      aria-label={label ?? t("notifications")}
       {...(popoverSupported ? { popover: "manual" } : {})}
       data-expanded={expanded || undefined}
       onPointerEnter={() => setExpanded(true)}
@@ -237,7 +239,7 @@ export function Toaster({ label = "Notifications", closeLabel = "Fermer la notif
               {item.action.label}
             </button>
           )}
-          <button type="button" class="sy-toast__close" aria-label={`${closeLabel} : ${item.title}`} onClick={() => remove(item.id)}>
+          <button type="button" class="sy-toast__close" aria-label={closeLabel ? `${closeLabel} : ${item.title}` : t("closeNotification", { title: item.title })} onClick={() => remove(item.id)}>
             <Icon name="close" size={16} />
           </button>
         </div>

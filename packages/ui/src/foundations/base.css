@@ -5,6 +5,9 @@
 @import "@fontsource/ibm-plex-sans/700.css";
 @import "@fontsource/ibm-plex-sans-arabic/400.css";
 @import "@fontsource/ibm-plex-sans-arabic/600.css";
+/* Hindi and Chinese fonts are declared only when their language is chosen
+   (loadFonts in i18n/I18n.tsx): Noto Sans SC alone is ~200 @font-face rules,
+   100 KB of CSS every page would otherwise carry. */
 
 :root {
   /* Heights can animate to auto (messages that unfold), where supported. */
@@ -106,4 +109,16 @@ body {
     margin: 0;
     padding-block: var(--sy-space-2);
   }
+}
+
+/* Scripts without capitals and with joined or stacked letters: no tracking
+   (it breaks Arabic joins and Devanagari's headline), no forced capitals. */
+:is(:lang(ar), :lang(hi), :lang(zh)) :is(.sy-clinical__level, .sy-logo__tagline, .sy-stat__value) {
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* Chinese and Devanagari need a little more room between lines. */
+:is(:lang(hi), :lang(zh)) {
+  line-height: 1.65;
 }

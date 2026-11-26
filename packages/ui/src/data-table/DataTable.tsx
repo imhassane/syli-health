@@ -8,6 +8,7 @@ import {
   type FilterOption,
 } from "../filter-pills/FilterPills.tsx";
 import { Icon } from "../icon/Icon.tsx";
+import { useI18n } from "../i18n/I18n.tsx";
 import { Skeleton } from "../skeleton/Skeleton.tsx";
 import type {
   DataSource,
@@ -19,6 +20,10 @@ import type {
 export type Column<Row> = {
   key: string;
   header: string;
+  /** The language of this column's data when it differs from the page's
+   * (drug names kept in French on a Chinese interface): read in its own
+   * language by screen readers (RGAA 8.7). */
+  lang?: string;
   cell: (row: Row) => ComponentChildren;
   sortable?: boolean;
   /** Numbers and amounts: aligned to the end. */
@@ -62,8 +67,6 @@ type State<Row> =
   | { status: "ready"; page: TablePage<Row> }
   | { status: "error"; page?: TablePage<Row>; message: string };
 
-const plural = (n: number, one: string, many: string) =>
-  `${n.toLocaleString("fr")} ${n > 1 ? many : one}`;
 
 /**
  * A data table with a search, filter pills, sortable columns and pages, over
@@ -83,7 +86,7 @@ export function DataTable<Row>({
   filters,
   actions,
   pageSize = 10,
-  emptyText = "Aucun résultat.",
+  emptyText,
   initialQuery,
   onQueryChange,
   debounce = 250,
@@ -91,6 +94,8 @@ export function DataTable<Row>({
   rowHref,
 }: DataTableProps<Row>) {
   const id = useId();
+  const { t, plural, number } = useI18n();
+  const noResults = emptyText ?? t("noResults");
   const [typed, setTyped] = useState(initialQuery?.search ?? "");
   const [query, setQuery] = useState<TableQuery>({
     search: initialQuery?.search ?? "",
@@ -128,11 +133,12 @@ export function DataTable<Row>({
           query.sort && columns.find((c) => c.key === query.sort?.key);
         setStatus(
           [
-            page.total === 0
-              ? emptyText
-              : plural(page.total, "résultat", "résultats"),
+            page.total === 0 ? noResults : plural("results", page.total),
             sorted
-              ? `triés par ${sorted.header}, ${query.sort?.direction === "ascending" ? "ordre croissant" : "ordre décroissant"}`
+              ? t("sortedBy", {
+                  column: String(sorted.header),
+                  order: t(query.sort?.direction === "ascending" ? "ascendingOrder" : "descendingOrder"),
+                })
               : "",
           ]
             .filter(Boolean)
@@ -148,9 +154,9 @@ export function DataTable<Row>({
         setState((before) => ({
           status: "error",
           page: before.page,
-          message: "Les données n’ont pas pu être chargées.",
+          message: t("loadError"),
         }));
-        setStatus("Erreur : les données n’ont pas pu être chargées.");
+        setStatus(t("loadErrorStatus"));
       },
     );
     return () => controller.abort();
@@ -188,7 +194,7 @@ export function DataTable<Row>({
   const opens = Boolean(onOpen || rowHref);
   if (import.meta.env?.DEV && columns.length > 5) {
     // A table shows what decides at a glance; the rest belongs to the opened row.
-    console.warn(`DataTable « ${caption} » : ${columns.length} colonnes, 5 au plus. Mettez le reste dans la fiche ouverte (onOpen).`);
+    console.warn(`DataTable "${caption}": ${columns.length} columns, 5 at most. Put the rest in the opened row (onOpen).`);
   }
   const active =
     (filters && query.filter !== filters.options[0]?.value ? 1 : 0) + (query.sort ? 1 : 0);
@@ -230,12 +236,12 @@ export function DataTable<Row>({
         {(filters || sortable.length > 0) && (
           // Narrow frames: filters and sort move to a drawer, so nothing wraps.
           <Button class="sy-table__more" icon="filter" onClick={() => setRefining(true)}>
-            Filtres
+            {t("filters")}
             {active > 0 && " "}
             {active > 0 && (
               <span class="sy-table__badge">
-                {active}
-                <span class="sy-visually-hidden">{active > 1 ? " actifs" : " actif"}</span>
+                {number(active)}
+                <span class="sy-visually-hidden">{plural("activeSuffix", active)}</span>
               </span>
             )}
           </Button>
@@ -245,10 +251,10 @@ export function DataTable<Row>({
       <Modal
         open={refining}
         onClose={() => setRefining(false)}
-        title={`Filtrer : ${caption}`}
+        title={t("filterTitle", { caption })}
         footer={
           <Button variant="primary" block onClick={() => setRefining(false)}>
-            {page ? `Voir ${plural(page.total, "résultat", "résultats")}` : "Voir les résultats"}
+            {page ? plural("showResults", page.total) : t("showAllResults")}
           </Button>
         }
       >
@@ -273,7 +279,7 @@ export function DataTable<Row>({
           )}
           {sortable.length > 0 && (
             <Select
-              label="Trier par"
+              label={t("sortBy")}
               value={query.sort ? `${query.sort.key}:${query.sort.direction}` : ""}
               onChange={(event) => {
                 const [key, direction] = (event.currentTarget as HTMLSelectElement).value.split(":");
@@ -284,13 +290,13 @@ export function DataTable<Row>({
                 }));
               }}
             >
-              <option value="">Ordre par défaut</option>
+              <option value="">{t("defaultOrder")}</option>
               {sortable.flatMap((column) => [
                 <option key={`${column.key}:a`} value={`${column.key}:ascending`}>
-                  {column.header} (croissant)
+                  {t("columnAscending", { column: String(column.header) })}
                 </option>,
                 <option key={`${column.key}:d`} value={`${column.key}:descending`}>
-                  {column.header} (décroissant)
+                  {t("columnDescending", { column: String(column.header) })}
                 </option>,
               ])}
             </Select>
@@ -312,7 +318,7 @@ export function DataTable<Row>({
             icon="refresh"
             onClick={() => setAttempt((n) => n + 1)}
           >
-            Réessayer
+            {t("retry")}
           </Button>
         </div>
       )}
@@ -396,7 +402,7 @@ export function DataTable<Row>({
               >
                 {columns.map((column) =>
                   column.rowHeader ? (
-                    <th scope="row" key={column.key} data-label={labels[column.key]} data-align={column.align}>
+                    <th scope="row" key={column.key} data-label={labels[column.key]} data-align={column.align} lang={column.lang}>
                       {rowHref ? (
                         <a class="sy-table__open" href={rowHref(row)}>
                           {column.cell(row)}
@@ -410,7 +416,7 @@ export function DataTable<Row>({
                       )}
                     </th>
                   ) : (
-                    <td key={column.key} data-label={labels[column.key]} data-align={column.align}>
+                    <td key={column.key} data-label={labels[column.key]} data-align={column.align} lang={column.lang}>
                       {column.cell(row)}
                     </td>
                   ),
@@ -419,7 +425,7 @@ export function DataTable<Row>({
             ))}
             {empty && (
               <tr class="sy-table__empty">
-                <td colSpan={columns.length}>{emptyText}</td>
+                <td colSpan={columns.length}>{noResults}</td>
               </tr>
             )}
             {Array.from({ length: fillers }, (_, i) => (
@@ -434,7 +440,7 @@ export function DataTable<Row>({
       {/* Always there, so the frame never changes height; buttons are
           disabled when there is nowhere to go. */}
       {(
-        <nav class="sy-table__pages" aria-label={`Pages de ${caption}`}>
+        <nav class="sy-table__pages" aria-label={t("pagesOf", { caption })}>
           <Button
             size="sm"
             icon="chevronStart"
@@ -442,17 +448,17 @@ export function DataTable<Row>({
             disabled={query.page <= 1}
             onClick={() => setQuery((q) => ({ ...q, page: q.page - 1 }))}
           >
-            Précédente
+            {t("previous")}
           </Button>
           <span class="sy-num">
-            Page {query.page} sur {pages}
+            {t("pageOf", { page: number(query.page), pages: number(pages) })}
           </span>
           <Button
             size="sm"
             disabled={query.page >= pages}
             onClick={() => setQuery((q) => ({ ...q, page: q.page + 1 }))}
           >
-            Suivante
+            {t("next")}
           </Button>
         </nav>
       )}

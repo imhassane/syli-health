@@ -16,3 +16,5 @@ export { Toaster } from "./toast/Toaster.tsx";
 export { Skeleton, type SkeletonProps } from "./skeleton/Skeleton.tsx";
 export { Logo, LogoMark, type LogoProps, type Product } from "./logo/Logo.tsx";
 export { Blob, BlobField, type BlobProps, type BlobFieldProps } from "./blob/Blob.tsx";
+export { I18nProvider, useI18n, makeI18n, applyLocale, loadFonts, type I18n } from "./i18n/I18n.tsx";
+export { locales, localeCodes, defaultLocale, preferredLocale, isLocale, type Locale } from "./i18n/locales.ts";

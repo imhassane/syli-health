@@ -1,0 +1,43 @@
+/* A soft shimmer passing over the shapes; still when motion is reduced
+   (--sy-motion: 0) and a plain shape in forced colors. */
+.sy-skeleton {
+  display: block;
+  block-size: 0.875rem;
+  inline-size: 70%;
+  border-radius: var(--sy-radius-pill);
+  background: linear-gradient(90deg, var(--sy-skeleton) 0%, var(--sy-skeleton-shine) 50%, var(--sy-skeleton) 100%) 0 0 / 200% 100%;
+  animation: sy-shimmer 1.4s ease-in-out infinite;
+}
+
+.sy-skeleton--circle {
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  border-radius: 50%;
+}
+
+.sy-skeleton--block {
+  inline-size: 100%;
+  block-size: 4rem;
+  border-radius: var(--sy-radius-md);
+}
+
+@keyframes sy-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sy-skeleton {
+    animation: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .sy-skeleton {
+    background: GrayText;
+  }
+}

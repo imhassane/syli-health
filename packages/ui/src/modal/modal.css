@@ -13,7 +13,16 @@
   background: var(--sy-surface);
   color: var(--sy-ink);
   box-shadow: var(--sy-shadow-pop);
-  transition: transform var(--sy-duration-slow) var(--sy-ease);
+  /* Opens and closes by sliding: display and overlay stay until the end of
+     the slide, so closing is seen too (where allow-discrete exists). */
+  transition:
+    transform var(--sy-duration-slow) var(--sy-ease),
+    overlay var(--sy-duration-slow) allow-discrete,
+    display var(--sy-duration-slow) allow-discrete;
+}
+
+.sy-modal:not([open]) {
+  transform: translateY(12px);
 }
 
 .sy-modal--sm { --sy-modal-w: 26rem; }
@@ -39,6 +48,21 @@
   overflow: hidden;
   overscroll-behavior: contain;
   background: rgb(10 20 32 / 0.5);
+  transition:
+    background-color var(--sy-duration-slow) var(--sy-ease),
+    overlay var(--sy-duration-slow) allow-discrete,
+    display var(--sy-duration-slow) allow-discrete;
+}
+
+/* The page behind darkens and clears gently (the backdrop holds no text). */
+.sy-modal[open]::backdrop {
+  @starting-style {
+    background-color: transparent;
+  }
+}
+
+.sy-modal:not([open])::backdrop {
+  background-color: transparent;
 }
 
 .sy-modal__handle {
@@ -109,6 +133,10 @@
     @starting-style {
       transform: translateY(100%);
     }
+  }
+
+  .sy-modal:not([open]) {
+    transform: translateY(100%);
   }
 
   .sy-modal__handle {

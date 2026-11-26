@@ -1,12 +1,14 @@
 import type { ComponentChildren } from "preact";
 import { useEffect, useId, useMemo, useRef, useState } from "preact/hooks";
 import { Button } from "../button/Button.tsx";
-import { SearchField } from "../field/Field.tsx";
+import { SearchField, Select } from "../field/Field.tsx";
+import { Modal } from "../modal/Modal.tsx";
 import {
   FilterPills,
   type FilterOption,
 } from "../filter-pills/FilterPills.tsx";
 import { Icon } from "../icon/Icon.tsx";
+import { Skeleton } from "../skeleton/Skeleton.tsx";
 import type {
   DataSource,
   SortDirection,
@@ -43,7 +45,17 @@ export type DataTableProps<Row> = {
   onQueryChange?: (query: TableQuery) => void;
   /** Waits this long after the last keystroke before searching. */
   debounce?: number;
+  /**
+   * Opens a row: its row header becomes a button, and a click anywhere on
+   * the row opens it too. Give rowHref instead when a row is a page.
+   */
+  onOpen?: (row: Row) => void;
+  /** Opens a row at an address: its row header becomes a link. */
+  rowHref?: (row: Row) => string;
 };
+
+// Clicks on these keep their own meaning inside a row that opens.
+const interactive = "a, button, input, select, textarea, label, summary, [role=button], [tabindex]";
 
 type State<Row> =
   | { status: "loading"; page?: TablePage<Row> }
@@ -70,11 +82,13 @@ export function DataTable<Row>({
   searchPlaceholder,
   filters,
   actions,
-  pageSize = 8,
+  pageSize = 10,
   emptyText = "Aucun résultat.",
   initialQuery,
   onQueryChange,
   debounce = 250,
+  onOpen,
+  rowHref,
 }: DataTableProps<Row>) {
   const id = useId();
   const [typed, setTyped] = useState(initialQuery?.search ?? "");
@@ -144,7 +158,21 @@ export function DataTable<Row>({
 
   const page = state.page;
   const pages = page ? Math.max(1, Math.ceil(page.total / query.pageSize)) : 1;
-  const firstLoad = state.status === "loading" && !page;
+  // Skeleton rows while a page loads, shown only past a short wait: a quick
+  // answer (local data, a cached API) goes from one page to the next without
+  // flashing them.
+  const [slow, setSlow] = useState(false);
+  useEffect(() => {
+    if (state.status !== "loading") return setSlow(false);
+    const timer = setTimeout(() => setSlow(true), page ? 150 : 0);
+    return () => clearTimeout(timer);
+  }, [state.status]);
+  const skeleton = state.status === "loading" && (slow || !page);
+  const shown = skeleton ? [] : (page?.rows ?? []);
+  const empty = state.status === "ready" && page?.total === 0;
+  // Always pageSize rows high: blank rows (dashed) fill the rest, so the
+  // frame keeps its size from one page, filter or state to the next.
+  const fillers = skeleton ? 0 : Math.max(0, query.pageSize - shown.length - (empty ? 1 : 0));
 
   const sortable = columns.filter((column) => column.sortable);
   const sortBy = (key: string) =>
@@ -155,6 +183,15 @@ export function DataTable<Row>({
           : "ascending";
       return { ...q, sort: { key, direction }, page: 1 };
     });
+
+  const [refining, setRefining] = useState(false);
+  const opens = Boolean(onOpen || rowHref);
+  if (import.meta.env?.DEV && columns.length > 5) {
+    // A table shows what decides at a glance; the rest belongs to the opened row.
+    console.warn(`DataTable « ${caption} » : ${columns.length} colonnes, 5 au plus. Mettez le reste dans la fiche ouverte (onOpen).`);
+  }
+  const active =
+    (filters && query.filter !== filters.options[0]?.value ? 1 : 0) + (query.sort ? 1 : 0);
 
   const labels = useMemo(
     () => Object.fromEntries(columns.map((c) => [c.key, c.header])),
@@ -181,58 +218,85 @@ export function DataTable<Row>({
           }
         />
         {filters && (
-          <FilterPills
-            label={filters.label}
-            options={filters.options}
-            value={query.filter}
-            onChange={(filter) => setQuery((q) => ({ ...q, filter, page: 1 }))}
-          />
+          <div class="sy-table__pills">
+            <FilterPills
+              label={filters.label}
+              options={filters.options}
+              value={query.filter}
+              onChange={(filter) => setQuery((q) => ({ ...q, filter, page: 1 }))}
+            />
+          </div>
         )}
-        {sortable.length > 0 && (
-          // Rows become cards on narrow screens and the headers go: the sort
-          // moves to a native select. Hidden (display: none) on wide ones.
-          <label class="sy-table__sortpick">
-            <span class="sy-table__sortpick-label">Trier par</span>
-            <span class="sy-select">
-              <select
-                class="sy-input sy-select__control"
-                value={
-                  query.sort ? `${query.sort.key}:${query.sort.direction}` : ""
-                }
-                onChange={(event) => {
-                  const [key, direction] = (
-                    event.currentTarget as HTMLSelectElement
-                  ).value.split(":");
-                  setQuery((q) => ({
-                    ...q,
-                    sort: key
-                      ? { key, direction: direction as SortDirection }
-                      : undefined,
-                    page: 1,
-                  }));
-                }}
-              >
-                <option value="">Ordre par défaut</option>
-                {sortable.flatMap((column) => [
-                  <option
-                    key={`${column.key}:a`}
-                    value={`${column.key}:ascending`}
-                  >
-                    {column.header} (croissant)
-                  </option>,
-                  <option
-                    key={`${column.key}:d`}
-                    value={`${column.key}:descending`}
-                  >
-                    {column.header} (décroissant)
-                  </option>,
-                ])}
-              </select>
-              <Icon name="chevronDown" size={18} />
-            </span>
-          </label>
+        {(filters || sortable.length > 0) && (
+          // Narrow frames: filters and sort move to a drawer, so nothing wraps.
+          <Button class="sy-table__more" icon="filter" onClick={() => setRefining(true)}>
+            Filtres
+            {active > 0 && " "}
+            {active > 0 && (
+              <span class="sy-table__badge">
+                {active}
+                <span class="sy-visually-hidden">{active > 1 ? " actifs" : " actif"}</span>
+              </span>
+            )}
+          </Button>
         )}
       </div>
+
+      <Modal
+        open={refining}
+        onClose={() => setRefining(false)}
+        title={`Filtrer : ${caption}`}
+        footer={
+          <Button variant="primary" block onClick={() => setRefining(false)}>
+            {page ? `Voir ${plural(page.total, "résultat", "résultats")}` : "Voir les résultats"}
+          </Button>
+        }
+      >
+        <div class="sy-table__refine">
+          {filters && (
+            <fieldset class="sy-choices">
+              <legend class="sy-choices__legend">{filters.label}</legend>
+              {filters.options.map((option) => (
+                <label class="sy-choices__option" key={option.value}>
+                  <input
+                    type="radio"
+                    name={`${id}-filter`}
+                    value={option.value}
+                    checked={query.filter === option.value}
+                    onChange={() => setQuery((q) => ({ ...q, filter: option.value, page: 1 }))}
+                  />
+                  <span>{option.label}</span>
+                  {option.count !== undefined && <span class="sy-choices__count sy-num">{option.count}</span>}
+                </label>
+              ))}
+            </fieldset>
+          )}
+          {sortable.length > 0 && (
+            <Select
+              label="Trier par"
+              value={query.sort ? `${query.sort.key}:${query.sort.direction}` : ""}
+              onChange={(event) => {
+                const [key, direction] = (event.currentTarget as HTMLSelectElement).value.split(":");
+                setQuery((q) => ({
+                  ...q,
+                  sort: key ? { key, direction: direction as SortDirection } : undefined,
+                  page: 1,
+                }));
+              }}
+            >
+              <option value="">Ordre par défaut</option>
+              {sortable.flatMap((column) => [
+                <option key={`${column.key}:a`} value={`${column.key}:ascending`}>
+                  {column.header} (croissant)
+                </option>,
+                <option key={`${column.key}:d`} value={`${column.key}:descending`}>
+                  {column.header} (décroissant)
+                </option>,
+              ])}
+            </Select>
+          )}
+        </div>
+      </Modal>
 
       {/* One status line for the results: never a live table. */}
       <p class="sy-visually-hidden" role="status">
@@ -260,10 +324,7 @@ export function DataTable<Row>({
         aria-labelledby={`${id}-caption`}
         aria-busy={state.status === "loading" || undefined}
       >
-        <table
-          class="sy-table__table"
-          data-loading={state.status === "loading" || undefined}
-        >
+        <table class="sy-table__table">
           <caption class="sy-visually-hidden">{caption}</caption>
           <thead>
             <tr>
@@ -306,52 +367,73 @@ export function DataTable<Row>({
             </tr>
           </thead>
           <tbody>
-            {firstLoad &&
-              Array.from({ length: Math.min(query.pageSize, 4) }, (_, i) => (
-                <tr
-                  key={`skeleton-${i}`}
-                  class="sy-table__skeleton"
-                  aria-hidden="true"
-                >
+            {skeleton &&
+              Array.from({ length: query.pageSize }, (_, i) => (
+                <tr key={`skeleton-${i}`} class="sy-table__skeleton" aria-hidden="true">
                   {columns.map((column) => (
-                    <td key={column.key}>
-                      <span class="sy-skeleton" />
+                    <td key={column.key} data-align={column.align}>
+                      <Skeleton />
                     </td>
                   ))}
                 </tr>
               ))}
-            {page?.rows.map((row) => (
-              <tr key={rowKey(row)}>
+            {shown.map((row) => (
+              <tr
+                key={rowKey(row)}
+                class={opens ? "sy-table__row--opens" : undefined}
+                // The pointer's shortcut to the row header's link or button,
+                // which keyboards and screen readers use.
+                onClick={
+                  opens
+                    ? (event) => {
+                        const target = event.target as HTMLElement;
+                        const own = target.closest(interactive);
+                        if ((own && event.currentTarget.contains(own)) || String(getSelection() ?? "") !== "") return;
+                        (event.currentTarget.querySelector(".sy-table__open") as HTMLElement | null)?.click();
+                      }
+                    : undefined
+                }
+              >
                 {columns.map((column) =>
                   column.rowHeader ? (
-                    <th
-                      scope="row"
-                      key={column.key}
-                      data-label={labels[column.key]}
-                      data-align={column.align}
-                    >
-                      {column.cell(row)}
+                    <th scope="row" key={column.key} data-label={labels[column.key]} data-align={column.align}>
+                      {rowHref ? (
+                        <a class="sy-table__open" href={rowHref(row)}>
+                          {column.cell(row)}
+                        </a>
+                      ) : onOpen ? (
+                        <button type="button" class="sy-table__open" onClick={() => onOpen(row)}>
+                          {column.cell(row)}
+                        </button>
+                      ) : (
+                        column.cell(row)
+                      )}
                     </th>
                   ) : (
-                    <td
-                      key={column.key}
-                      data-label={labels[column.key]}
-                      data-align={column.align}
-                    >
+                    <td key={column.key} data-label={labels[column.key]} data-align={column.align}>
                       {column.cell(row)}
                     </td>
                   ),
                 )}
               </tr>
             ))}
+            {empty && (
+              <tr class="sy-table__empty">
+                <td colSpan={columns.length}>{emptyText}</td>
+              </tr>
+            )}
+            {Array.from({ length: fillers }, (_, i) => (
+              <tr key={`filler-${i}`} class="sy-table__filler" aria-hidden="true">
+                <td colSpan={columns.length} />
+              </tr>
+            ))}
           </tbody>
         </table>
-        {state.status === "ready" && page?.total === 0 && (
-          <p class="sy-table__empty">{emptyText}</p>
-        )}
       </div>
 
-      {page && page.total > query.pageSize && (
+      {/* Always there, so the frame never changes height; buttons are
+          disabled when there is nowhere to go. */}
+      {(
         <nav class="sy-table__pages" aria-label={`Pages de ${caption}`}>
           <Button
             size="sm"

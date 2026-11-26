@@ -53,6 +53,9 @@ importers:
       '@fontsource/ibm-plex-sans-arabic':
         specifier: 5.2.8
         version: 5.2.8
+      '@fontsource/montserrat':
+        specifier: 5.3.0
+        version: 5.3.0
     devDependencies:
       '@axe-core/playwright':
         specifier: 4.14.0
@@ -881,6 +884,9 @@ packages:
 
   '@fontsource/ibm-plex-sans@5.2.8':
     resolution: {integrity: sha512-eztSXjDhPhcpxNIiGTgMebdLP9qS4rWkysuE1V7c+DjOR0qiezaiDaTwQE7bTnG5HxAY/8M43XKDvs3cYq6ZYQ==}
+
+  '@fontsource/montserrat@5.3.0':
+    resolution: {integrity: sha512-iQPDtZOnmM5ih4JBGaMSXisRap0ixb9bAUw2hDtY7EjVfaqiiNlKtVuJl9XclxUwtwMMHNcWXfQR6zI9x05+Tg==}
 
   '@isaacs/cliui@9.0.0':
     resolution: {integrity: sha512-AokJm4tuBHillT+FpMtxQ60n8ObyXBatq7jD2/JA9dxbDDokKQm8KMht5ibGzLVU9IJDIKK4TPKgMHEYMn3lMg==}
@@ -4091,6 +4097,8 @@ snapshots:
   '@fontsource/ibm-plex-sans-arabic@5.2.8': {}
 
   '@fontsource/ibm-plex-sans@5.2.8': {}
+
+  '@fontsource/montserrat@5.3.0': {}
 
   '@isaacs/cliui@9.0.0': {}
 

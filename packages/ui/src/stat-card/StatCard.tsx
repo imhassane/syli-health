@@ -1,5 +1,6 @@
 import type { ComponentChildren } from "preact";
 import { Icon, type IconName } from "../icon/Icon.tsx";
+import { Skeleton } from "../skeleton/Skeleton.tsx";
 import type { Tone } from "../status-pill/StatusPill.tsx";
 
 export type StatCardProps = {
@@ -9,22 +10,33 @@ export type StatCardProps = {
   note?: ComponentChildren;
   icon: IconName;
   tone?: Exclude<Tone, "danger"> | "danger";
+  /** While the figure loads: its label stays, the value is a skeleton. */
+  loading?: boolean;
 };
 
 /**
  * A key figure on a pastel card. Read in the order of meaning: the label,
  * then the value, then its note (a description list keeps them together).
  */
-export function StatCard({ label, value, note, icon, tone = "info" }: StatCardProps) {
+export function StatCard({ label, value, note, icon, tone = "info", loading = false }: StatCardProps) {
   return (
-    <div class={`sy-stat sy-stat--${tone}`}>
+    <div class={`sy-stat sy-stat--${tone}`} aria-busy={loading || undefined}>
       <span class="sy-stat__icon">
         <Icon name={icon} size={20} />
       </span>
       <dl class="sy-stat__body">
         <dt class="sy-stat__label">{label}</dt>
-        <dd class="sy-stat__value sy-num">{value}</dd>
-        {note && <dd class="sy-stat__note">{note}</dd>}
+        {loading ? (
+          <dd class="sy-stat__value">
+            <Skeleton width="6rem" height="1.5rem" />
+            <span class="sy-visually-hidden">Chargement…</span>
+          </dd>
+        ) : (
+          <>
+            <dd class="sy-stat__value sy-num">{value}</dd>
+            {note && <dd class="sy-stat__note">{note}</dd>}
+          </>
+        )}
       </dl>
     </div>
   );

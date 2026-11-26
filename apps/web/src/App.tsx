@@ -1,6 +1,8 @@
 import {
   Button,
+  BlobField,
   ClinicalAlert,
+  Logo,
   DataTable,
   Modal,
   Select,
@@ -26,7 +28,6 @@ const status = {
 
 const columns: Column<StockItem>[] = [
   { key: "dci", header: "Médicament", cell: (r) => r.dci, sortable: true, rowHeader: true },
-  { key: "brand", header: "Nom commercial", cell: (r) => r.brand, sortable: true },
   { key: "qty", header: "Stock", cell: (r) => <span class="sy-num">{r.qty}</span>, sortable: true, align: "end" },
   { key: "price", header: "Prix", cell: (r) => <span class="sy-num sy-ltr">{gnf(r.price)}</span>, sortable: true, align: "end" },
   { key: "status", header: "Statut", cell: (r) => status[r.status] },
@@ -67,15 +68,14 @@ export function App() {
   const online = useOnline();
   const [receiving, setReceiving] = useState(false);
   const [advised, setAdvised] = useState(false);
+  const [product, setProduct] = useState<StockItem | null>(null);
 
   return (
     <div class="app">
+      <BlobField />
       <header class="app__bar">
         <a class="app__brand" href="/">
-          <img src="/icon.svg" alt="" width="36" height="36" />
-          <span>
-            Syli <strong>Pharmacie</strong>
-          </span>
+          <Logo product="pharmacie" size="2.25rem" />
         </a>
         <StatusPill tone={online ? "success" : "warning"}>{online ? "En ligne" : "Hors ligne"}</StatusPill>
         <ThemeToggle />
@@ -107,6 +107,7 @@ export function App() {
           searchLabel="Rechercher dans le stock"
           searchPlaceholder="DCI, nom commercial, lot…"
           filters={filters}
+          onOpen={setProduct}
           actions={
             <Button size="sm" variant="primary" icon="plus" onClick={() => setReceiving(true)}>
               Réception
@@ -146,6 +147,33 @@ export function App() {
           </Select>
           <TextField label="Numéro de bon de livraison" name="slip" required error="Indiquez le numéro du bon." autoFocus />
         </form>
+      </Modal>
+
+      <Modal
+        open={product !== null}
+        onClose={() => setProduct(null)}
+        title={product?.dci ?? ""}
+        description={product ? `Nom commercial : ${product.brand}` : undefined}
+        footer={
+          <Button variant="primary" onClick={() => setProduct(null)}>
+            Fermer
+          </Button>
+        }
+      >
+        {product && (
+          <dl class="sy-facts">
+            <dt>Stock</dt>
+            <dd class="sy-num">{product.qty}</dd>
+            <dt>Prochain lot</dt>
+            <dd class="sy-ltr">{product.lot}</dd>
+            <dt>Péremption</dt>
+            <dd>{product.expires ? product.expires.split("-").reverse().join("/") : "—"}</dd>
+            <dt>Prix</dt>
+            <dd class="sy-num sy-ltr">{gnf(product.price)}</dd>
+            <dt>Statut</dt>
+            <dd>{status[product.status]}</dd>
+          </dl>
+        )}
       </Modal>
 
       <Toaster />

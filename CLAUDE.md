@@ -17,6 +17,11 @@ Architecture and product decisions (French) live in the claude.ai project « Sui
 - Layout by container queries; media queries only for the input device (`pointer: coarse`: 44px targets) and user settings.
 - Fields: errors after interaction only (`:user-invalid`), one polite announcer (`announce()`).
 - Clinical alerts (interactions, allergies) are never toasts: `ClinicalAlert` stays until handled.
+- Tables (`DataTable`): 5 columns at most, what decides at a glance; the rest goes in the opened row (`onOpen` opens a sheet, `rowHref` a page; the row header is the link or button, a click anywhere on the row does the same). Always `pageSize` rows high (10): blank rows dashed, the pagination always there. Filters as pills on one line (they scroll sideways, never wrap); in a narrow frame, filters and sort go into a drawer.
+- Loading content is a `Skeleton`, never a spinner (spinners only on a button doing something).
+- Banners and alerts have no rules (no border, no start bar): a tinted field and an icon disc.
+- Motion (from Syli Guichet): things arrive by sliding or unfolding, once, with `@starting-style`; text never fades (axe reads contrast mid-animation); nothing moves for more than 5 s (WCAG 2.2.2); all off with `prefers-reduced-motion`.
+- Brand: `Logo` (the drop, a leaf in the product's colour: health, pharmacie, clinique, labo, patient; wordmark in Montserrat, product names 4.5:1). `Blob`/`BlobField`: the ten brand blobs (vectorised), behind pages, under a veil of the page colour, never behind text to read.
 - Every component ships with stories, Vitest tests (role and name queries, axe) and passes `e2e/stories.spec.js` (axe in Chromium, light and dark, phone, tablet, computer). Target: WCAG 2.2 AA.
 
 ## Browser support

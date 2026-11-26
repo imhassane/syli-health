@@ -11,7 +11,7 @@ for (const theme of ["light", "dark"]) {
     test(`${entry.id} (${theme})`, async ({ page }) => {
       await page.goto(`/iframe.html?id=${entry.id}&viewMode=story&theme=${theme}`);
       await page.locator("#storybook-root > *").first().waitFor();
-      await page.waitForTimeout(150);
+      await page.waitForTimeout(350);
       // A loading story shows skeletons on purpose; others settle first.
       await page.waitForLoadState("networkidle");
       const { violations } = await new AxeBuilder({ page }).withTags(tags).analyze();

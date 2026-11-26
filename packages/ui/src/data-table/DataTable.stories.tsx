@@ -1,4 +1,6 @@
+import { useState } from "preact/hooks";
 import { Button } from "../button/Button.tsx";
+import { Modal } from "../modal/Modal.tsx";
 import { StatusPill } from "../status-pill/StatusPill.tsx";
 import { StoryFrame } from "../StoryFrame.tsx";
 import { DataTable, type Column } from "./DataTable.tsx";
@@ -14,11 +16,10 @@ const stockStatus = {
   ok: <StatusPill tone="success">Disponible</StatusPill>,
 };
 
+// Few columns: what decides at a glance. The rest is in the row, opened.
 const stockColumns: Column<StockItem>[] = [
   { key: "dci", header: "Médicament", cell: (r) => r.dci, sortable: true, rowHeader: true },
-  { key: "brand", header: "Nom commercial", cell: (r) => r.brand, sortable: true },
   { key: "qty", header: "Stock", cell: (r) => <span class="sy-num">{r.qty}</span>, sortable: true, align: "end" },
-  { key: "lot", header: "Prochain lot", cell: (r) => (r.lot === "—" ? "—" : <span><span class="sy-ltr">{r.lot}</span> · pér. {r.expires.split("-").reverse().join("/")}</span>) },
   { key: "price", header: "Prix", cell: (r) => <span class="sy-num sy-ltr">{gnf(r.price)}</span>, sortable: true, align: "end" },
   { key: "status", header: "Statut", cell: (r) => stockStatus[r.status] },
 ];
@@ -38,8 +39,9 @@ const stockFilters = {
   ],
 };
 
-export const Stock = {
-  render: () => (
+function StockTable() {
+  const [open, setOpen] = useState<StockItem | null>(null);
+  return (
     <StoryFrame>
       <DataTable
         caption="Produits en stock"
@@ -49,6 +51,7 @@ export const Stock = {
         searchLabel="Rechercher dans le stock"
         searchPlaceholder="DCI, nom commercial, lot…"
         filters={stockFilters}
+        onOpen={setOpen}
         actions={
           <>
             <Button size="sm">Inventaire</Button>
@@ -56,9 +59,33 @@ export const Stock = {
           </>
         }
       />
+      <Modal
+        open={open !== null}
+        onClose={() => setOpen(null)}
+        title={open?.dci ?? ""}
+        description={open ? `Nom commercial : ${open.brand}` : undefined}
+        footer={<Button variant="primary" onClick={() => setOpen(null)}>Fermer</Button>}
+      >
+        {open && (
+          <dl class="sy-facts">
+            <dt>Stock</dt>
+            <dd class="sy-num">{open.qty}</dd>
+            <dt>Prochain lot</dt>
+            <dd class="sy-ltr">{open.lot}</dd>
+            <dt>Péremption</dt>
+            <dd>{open.expires ? open.expires.split("-").reverse().join("/") : "—"}</dd>
+            <dt>Prix</dt>
+            <dd class="sy-num sy-ltr">{gnf(open.price)}</dd>
+            <dt>Statut</dt>
+            <dd>{stockStatus[open.status]}</dd>
+          </dl>
+        )}
+      </Modal>
     </StoryFrame>
-  ),
-};
+  );
+}
+
+export const Stock = { render: () => <StockTable /> };
 
 // A pretend API: the same rows behind a fetch, with network latency.
 const server = localSource(reservations, {
@@ -98,7 +125,6 @@ const reservationStatus = {
 
 const reservationColumns: Column<Reservation>[] = [
   { key: "patient", header: "Patient", cell: (r) => r.patient, sortable: true, rowHeader: true },
-  { key: "items", header: "Médicaments", cell: (r) => r.items },
   { key: "payer", header: "Paiement", cell: (r) => r.payer },
   { key: "amount", header: "Montant", cell: (r) => <span class="sy-num sy-ltr">{gnf(r.amount)}</span>, sortable: true, align: "end" },
   { key: "status", header: "Statut", cell: (r) => reservationStatus[r.status] },

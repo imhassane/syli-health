@@ -7,6 +7,8 @@
 @import "@fontsource/ibm-plex-sans-arabic/600.css";
 
 :root {
+  /* Heights can animate to auto (messages that unfold), where supported. */
+  interpolate-size: allow-keywords;
   background: var(--sy-bg);
   color: var(--sy-ink);
   font-family: var(--sy-font);
@@ -73,4 +75,35 @@ body {
 
 .sy-icon--flip:dir(rtl) {
   transform: scaleX(-1);
+}
+
+/* Key facts of an opened item: label above value on a phone, side by side
+   from 30rem. */
+.sy-facts {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--sy-space-1) var(--sy-space-4);
+  margin: 0;
+}
+
+.sy-facts dt {
+  color: var(--sy-ink-2);
+  font-size: var(--sy-text-sm);
+}
+
+.sy-facts dd {
+  margin: 0 0 var(--sy-space-2);
+  font-weight: var(--sy-weight-strong);
+}
+
+@media (width >= 30rem) {
+  .sy-facts {
+    grid-template-columns: 10rem minmax(0, 1fr);
+    align-items: center;
+  }
+
+  .sy-facts dd {
+    margin: 0;
+    padding-block: var(--sy-space-2);
+  }
 }

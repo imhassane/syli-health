@@ -15,7 +15,11 @@ describe("ClinicalAlert", () => {
     expect(screen.getByRole("region", { name: "Interaction : ciprofloxacine + glibenclamide" })).toBeTruthy();
     expect(screen.getByText("Précaution d’emploi")).toBeTruthy();
     const box = screen.getByRole("checkbox", { name: "Conseil donné au patient" }) as HTMLInputElement;
+    const region = screen.getByRole("region", { name: /Interaction/ });
+    expect(region.hasAttribute("data-handled")).toBe(false);
     await userEvent.click(box);
     expect(box.checked).toBe(true);
+    // Handled: it calms down (data-handled), still there for the record.
+    expect(region.hasAttribute("data-handled")).toBe(true);
   });
 });

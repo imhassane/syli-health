@@ -1,0 +1,73 @@
+@import "@fontsource/montserrat/latin-600.css";
+@import "@fontsource/montserrat/latin-700.css";
+
+/* The logo's colours: the drop's blue for every product, the leaf and the
+   name in the product's colour. Names are text: 4.5:1 on the page and on a
+   surface, in both schemes (tokens.test). */
+.sy-logo {
+  --sy-logo-drop: #1c4fd7;
+  --sy-logo-drop-hi: #13b2f8;
+  --sy-logo-syli: light-dark(#12357e, #e8eef5);
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--sy-logo-size, 2.5rem) * 0.3);
+  color: var(--sy-logo-syli);
+  line-height: 1;
+}
+
+.sy-logo--health { --sy-logo-leaf: #3cc9b0; --sy-logo-leaf-hi: #8ef0d6; --sy-logo-name: light-dark(#1766c8, #6fb3ff); }
+.sy-logo--pharmacie { --sy-logo-leaf: #2fbfa8; --sy-logo-leaf-hi: #8ef0d6; --sy-logo-name: light-dark(#0b7a6d, #5fe0c8); }
+.sy-logo--clinique { --sy-logo-leaf: #ff7a59; --sy-logo-leaf-hi: #ffc2ad; --sy-logo-name: light-dark(#c93f22, #ff9a7d); }
+.sy-logo--labo { --sy-logo-leaf: #8b5cf6; --sy-logo-leaf-hi: #d8c4ff; --sy-logo-name: light-dark(#6d3fd9, #b9a0ff); }
+.sy-logo--patient { --sy-logo-leaf: #f5a524; --sy-logo-leaf-hi: #ffe08a; --sy-logo-name: light-dark(#a35f00, #ffc35c); }
+
+.sy-logo__mark {
+  display: block;
+  flex: none;
+  inline-size: auto;
+}
+
+.sy-logo__words {
+  display: grid;
+  gap: 0.6em;
+}
+
+.sy-logo__word {
+  font-family: "Montserrat", var(--sy-font);
+  font-size: calc(var(--sy-logo-size, 2.5rem) * 0.62);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.sy-logo__syli {
+  font-weight: 700;
+}
+
+.sy-logo__product {
+  color: var(--sy-logo-name);
+}
+
+.sy-logo__tagline {
+  font-size: max(0.6875rem, calc(var(--sy-logo-size, 2.5rem) * 0.16));
+  font-weight: var(--sy-weight-strong);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.sy-logo--stack {
+  flex-direction: column;
+  gap: calc(var(--sy-logo-size, 2.5rem) * 0.18);
+}
+
+.sy-logo--stack .sy-logo__word {
+  font-size: calc(var(--sy-logo-size, 2.5rem) * 0.42);
+}
+
+@media (forced-colors: active) {
+  .sy-logo,
+  .sy-logo__product {
+    color: CanvasText;
+  }
+}

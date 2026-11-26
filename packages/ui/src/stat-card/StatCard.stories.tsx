@@ -17,3 +17,16 @@ export const Dashboard = {
 };
 
 export const Single = { render: (args: StatCardProps) => <StoryFrame width="20rem"><StatCard {...args} /></StoryFrame> };
+
+export const Loading = {
+  render: () => (
+    <StoryFrame>
+      <StatGrid label="Chiffres du jour">
+        <StatCard icon="money" label="Ventes du jour" value="" tone="info" loading />
+        <StatCard icon="rx" label="Ordonnances" value="" tone="success" loading />
+        <StatCard icon="bag" label="Réservations" value="" tone="violet" loading />
+        <StatCard icon="pill" label="Rupture" value="" tone="warning" loading />
+      </StatGrid>
+    </StoryFrame>
+  ),
+};

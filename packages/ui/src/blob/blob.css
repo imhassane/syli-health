@@ -1,0 +1,80 @@
+.sy-blob {
+  display: block;
+  block-size: auto;
+  overflow: visible;
+}
+
+/* Behind everything in its container, cut at its edges, faint: the brand's
+   blobs set the mood, they never compete with what is written. */
+.sy-blob-field {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: clip;
+  pointer-events: none;
+}
+
+.sy-blob-field::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--sy-blob-veil);
+}
+
+.sy-blob-field > .sy-blob {
+  position: absolute;
+}
+
+.sy-blob-field--corners .sy-blob-field__a {
+  inset-block-start: -6rem;
+  inset-inline-end: -7rem;
+}
+
+.sy-blob-field--corners .sy-blob-field__b {
+  inset-block-end: -7rem;
+  inset-inline-start: -8rem;
+}
+
+.sy-blob-field--scatter .sy-blob-field__a {
+  inset-block-start: -8rem;
+  inset-inline-start: -10rem;
+}
+
+.sy-blob-field--scatter .sy-blob-field__b {
+  inset-block-start: 30%;
+  inset-inline-end: -5rem;
+}
+
+.sy-blob-field--scatter .sy-blob-field__c {
+  inset-block-end: -4rem;
+  inset-inline-start: 35%;
+}
+
+/* A slow drift, barely there; still when motion is reduced. */
+@media (prefers-reduced-motion: no-preference) {
+  .sy-blob-field > .sy-blob {
+    animation: sy-drift 24s ease-in-out infinite alternate;
+  }
+
+  .sy-blob-field > .sy-blob:nth-child(2) {
+    animation-duration: 31s;
+    animation-delay: -9s;
+  }
+
+  .sy-blob-field > .sy-blob:nth-child(3) {
+    animation-duration: 27s;
+    animation-delay: -4s;
+  }
+}
+
+@keyframes sy-drift {
+  to {
+    translate: 1.5rem -1rem;
+  }
+}
+
+@media (forced-colors: active) {
+  .sy-blob-field {
+    display: none;
+  }
+}

@@ -104,15 +104,46 @@ test.describe("Data table", () => {
     await expect(page.getByRole("status").filter({ hasText: "résultat" })).toContainText(/résultat/);
     const narrow = (page.viewportSize()?.width ?? 1280) < 700;
     if (narrow) {
-      // Rows are cards: the sort is a select.
-      await page.getByRole("combobox", { name: "Trier par" }).selectOption({ index: 1 });
+      // Rows are cards and the pills would not fit: filters and sort in a drawer.
+      await expect(page.getByRole("group", { name: "Filtrer le stock" })).toBeHidden();
+      await page.getByRole("button", { name: "Filtres" }).click();
+      const drawer = page.getByRole("dialog", { name: /Filtrer/ });
+      await drawer.getByRole("combobox", { name: "Trier par" }).selectOption({ index: 1 });
+      await drawer.getByRole("button", { name: /^Voir/ }).click();
+      await expect(drawer).toBeHidden();
+      await expect(page.getByRole("button", { name: "Filtres 1 actif" })).toBeVisible();
     } else {
-      await expect(page.getByRole("combobox", { name: "Trier par" })).toBeHidden();
+      await expect(page.getByRole("button", { name: "Filtres" })).toBeHidden();
       const sort = page.getByRole("columnheader").getByRole("button").first();
       await sort.focus();
       await page.keyboard.press("Enter");
     }
     await expect(page.locator("th[aria-sort]")).toHaveCount(1);
     await expect(page.getByRole("status").filter({ hasText: "triés par" })).toHaveCount(1);
+  });
+});
+
+test.describe("Fixed frame", () => {
+  test.skip(({ viewport }) => (viewport?.width ?? 0) < 640, "wide screens only (cards have their own height)");
+
+  test("the table keeps its height from a full page to an empty filter", async ({ page }) => {
+    await page.goto(story("données-datatable--stock"));
+    const frame = page.locator(".sy-table__scroll");
+    await expect(page.locator("tbody th").first()).toBeVisible();
+    const full = (await frame.boundingBox()).height;
+    await page.getByRole("button", { name: "Ruptures" }).click();
+    await expect(page.locator("tbody th")).toHaveCount(1);
+    expect(Math.abs((await frame.boundingBox()).height - full)).toBeLessThan(1);
+    await page.getByRole("searchbox").fill("zzz");
+    await expect(page.getByRole("cell", { name: /Aucun/ })).toBeVisible();
+    expect(Math.abs((await frame.boundingBox()).height - full)).toBeLessThan(1);
+  });
+
+  test("filter pills never wrap", async ({ page }) => {
+    await page.goto(story("données-datatable--stock"));
+    const pills = page.locator(".sy-table__pills .sy-filters__pill");
+    await expect(pills.first()).toBeVisible();
+    const tops = new Set((await pills.evaluateAll((els) => els.map((el) => Math.round(el.getBoundingClientRect().top)))));
+    expect(tops.size).toBe(1);
   });
 });

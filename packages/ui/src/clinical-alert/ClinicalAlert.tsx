@@ -33,9 +33,9 @@ export function ClinicalAlert({ title, severity, reason, action, acknowledge, ch
   const id = useId();
   const level = severities[severity];
   return (
-    <section class={`sy-clinical sy-clinical--${level.tone}`} aria-labelledby={`${id}-title`}>
+    <section class={`sy-clinical sy-clinical--${level.tone}`} aria-labelledby={`${id}-title`} data-handled={acknowledge?.checked || undefined}>
       <span class="sy-clinical__icon" aria-hidden="true">
-        <Icon name="warning" size={22} />
+        <Icon name={acknowledge?.checked ? "check" : "warning"} size={22} />
       </span>
       <div class="sy-clinical__body">
         <p class="sy-clinical__level">{level.label}</p>

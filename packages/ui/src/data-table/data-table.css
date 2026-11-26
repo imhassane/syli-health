@@ -40,8 +40,71 @@
 }
 
 .sy-table__search {
-  flex: 1 1 16rem;
+  flex: 1 1 14rem;
+  min-inline-size: 12rem;
   max-inline-size: 28rem;
+}
+
+/* Filter pills stay on one line: past the frame's width they scroll
+   sideways, never wrap. */
+.sy-table__pills {
+  flex: 0 1 auto;
+  min-inline-size: 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  overscroll-behavior-x: contain;
+}
+
+.sy-table__pills .sy-filters {
+  flex-wrap: nowrap;
+  inline-size: max-content;
+}
+
+/* The drawer's button replaces the pills on narrow frames. */
+.sy-table__more {
+  display: none;
+}
+
+.sy-table__badge {
+  display: inline-grid;
+  place-items: center;
+  min-inline-size: 1.375rem;
+  block-size: 1.375rem;
+  padding-inline: var(--sy-space-1);
+  border-radius: var(--sy-radius-pill);
+  background: var(--sy-primary);
+  color: var(--sy-on-primary);
+  font-size: var(--sy-text-xs);
+  font-weight: var(--sy-weight-bold);
+}
+
+.sy-table__refine {
+  display: grid;
+  gap: var(--sy-space-5);
+}
+
+.sy-table {
+  container: sy-table-frame / inline-size;
+}
+
+@container sy-table-frame (inline-size < 40rem) {
+  .sy-table__toolbar {
+    flex-wrap: nowrap;
+  }
+
+  .sy-table__search {
+    flex: 1 1 0;
+    min-inline-size: 0;
+  }
+
+  .sy-table__pills {
+    display: none;
+  }
+
+  .sy-table__more {
+    display: inline-flex;
+    flex: none;
+  }
 }
 
 .sy-table__error {
@@ -62,8 +125,7 @@
 
 .sy-table__scroll {
   container: sy-table / inline-size;
-  overflow: auto;
-  max-block-size: min(40rem, 75vh);
+  overflow-x: auto;
   border-radius: var(--sy-radius-md);
 }
 
@@ -72,11 +134,6 @@
   border-collapse: separate;
   border-spacing: 0;
   font-size: var(--sy-text-md);
-  transition: opacity var(--sy-duration) var(--sy-ease);
-}
-
-.sy-table__table[data-loading] tbody {
-  opacity: 0.55;
 }
 
 .sy-table__table thead th {
@@ -90,6 +147,12 @@
   font-weight: var(--sy-weight-medium);
   text-align: start;
   white-space: nowrap;
+}
+
+/* The first header stays above the sticky row headers when scrolling. */
+.sy-table__table thead th:first-child {
+  inset-inline-start: 0;
+  z-index: calc(var(--sy-z-sticky) + 1);
 }
 
 .sy-table__table :is(th, td)[data-align="end"] {
@@ -121,8 +184,14 @@
   font-weight: var(--sy-weight-strong);
 }
 
+/* Every row the same height, so pageSize rows (blank ones included) make a
+   frame that never changes size. No block padding: two lines of text fit. */
+.sy-table__table tbody tr {
+  block-size: var(--sy-row-height, 3.5rem);
+}
+
 .sy-table__table tbody :is(th, td) {
-  padding: var(--sy-space-3);
+  padding: 0 var(--sy-space-3);
   font-weight: var(--sy-weight-regular);
   text-align: start;
   vertical-align: middle;
@@ -132,7 +201,23 @@
   font-weight: var(--sy-weight-strong);
 }
 
-.sy-table__table tbody tr:nth-child(odd) > * {
+/* One line per cell, so every row keeps its height; the row header alone
+   may take two (a drug's name is never cut), and stays in view when the
+   table scrolls sideways. */
+.sy-table__table tbody td {
+  white-space: nowrap;
+}
+
+.sy-table__table tbody th[scope="row"] {
+  position: sticky;
+  inset-inline-start: 0;
+  z-index: 1;
+  min-inline-size: 12rem;
+  max-inline-size: 20rem;
+  background: var(--sy-surface);
+}
+
+.sy-table__table tbody tr:nth-child(odd):not(.sy-table__filler, .sy-table__empty) > * {
   background: var(--sy-sunken);
 }
 
@@ -146,20 +231,27 @@
   border-end-end-radius: var(--sy-radius-md);
 }
 
-.sy-skeleton {
-  display: block;
-  block-size: 0.875rem;
-  inline-size: 70%;
-  border-radius: var(--sy-radius-pill);
-  background: var(--sy-neutral-soft);
-}
-
-.sy-table__empty {
-  margin: 0;
-  padding: var(--sy-space-6);
+.sy-table__table .sy-table__empty td {
   color: var(--sy-ink-2);
   text-align: center;
 }
+
+/* Blank rows: a dashed line, room for more. */
+.sy-table__table .sy-table__filler td {
+  border-block-end: 1px dashed color-mix(in srgb, var(--sy-edge) 50%, transparent);
+  border-radius: 0 !important;
+  background: none !important;
+}
+
+.sy-table__table .sy-table__filler:last-child td {
+  border-block-end: 0;
+}
+
+/* Skeleton lines of varied lengths, aligned like the column. */
+.sy-table__skeleton :is(td, th):nth-child(3n + 1) .sy-skeleton { inline-size: 75%; }
+.sy-table__skeleton :is(td, th):nth-child(3n + 2) .sy-skeleton { inline-size: 55%; }
+.sy-table__skeleton :is(td, th):nth-child(3n) .sy-skeleton { inline-size: 40%; }
+.sy-table__skeleton [data-align="end"] .sy-skeleton { margin-inline-start: auto; }
 
 .sy-table__pages {
   display: flex;
@@ -168,18 +260,6 @@
   gap: var(--sy-space-3);
   color: var(--sy-ink-2);
   font-size: var(--sy-text-sm);
-}
-
-.sy-table__sortpick {
-  display: none;
-  align-items: center;
-  gap: var(--sy-space-2);
-  font-size: var(--sy-text-sm);
-  color: var(--sy-ink-2);
-}
-
-.sy-table__sortpick .sy-select {
-  flex: 1;
 }
 
 .sy-table {
@@ -203,6 +283,30 @@
 
   .sy-table__table thead {
     display: none;
+  }
+
+  .sy-table__table tbody th[scope="row"] {
+    position: static;
+    max-inline-size: none;
+    background: none;
+  }
+
+  .sy-table__table tbody td {
+    white-space: normal;
+  }
+
+  /* Cards have their own height: no blank rows, three skeleton cards. */
+  .sy-table__table .sy-table__filler,
+  .sy-table__table .sy-table__skeleton:nth-child(n + 4) {
+    display: none;
+  }
+
+  .sy-table__table tbody tr {
+    block-size: auto;
+  }
+
+  .sy-table__table .sy-table__skeleton td::before {
+    content: none;
   }
 
   .sy-table__table tbody tr {
@@ -240,5 +344,65 @@
 
   .sy-table__table tbody tr > * {
     border-block-end: 1px solid CanvasText;
+  }
+}
+
+/* Rows that open: the whole row answers the pointer; the row header's link
+   or button is what keyboards and screen readers reach. */
+.sy-table__row--opens {
+  cursor: pointer;
+}
+
+.sy-table__table tbody tr.sy-table__row--opens:hover > * {
+  background: var(--sy-primary-soft);
+}
+
+.sy-table__open {
+  display: inline;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.sy-table__open:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+/* Its focus ring outlines the whole row: that is what opens. */
+.sy-table__open:focus-visible {
+  outline: none;
+}
+
+/* Drawn on the cells (an outline on a row is not painted everywhere). */
+.sy-table__table tbody tr:has(.sy-table__open:focus-visible) > * {
+  box-shadow: inset 0 2px var(--sy-primary), inset 0 -2px var(--sy-primary);
+}
+
+.sy-table__table tbody tr:has(.sy-table__open:focus-visible) > :first-child {
+  box-shadow: inset 0 2px var(--sy-primary), inset 0 -2px var(--sy-primary), inset 2px 0 var(--sy-primary);
+}
+
+.sy-table__table tbody tr:has(.sy-table__open:focus-visible) > :last-child {
+  box-shadow: inset 0 2px var(--sy-primary), inset 0 -2px var(--sy-primary), inset -2px 0 var(--sy-primary);
+}
+
+@media (forced-colors: active) {
+  .sy-table__open:focus-visible {
+    outline: 2px solid Highlight;
+  }
+}
+
+/* Touch screens: the row header's target is the whole cell height. */
+@media (pointer: coarse) {
+  .sy-table__open {
+    display: block;
+    min-block-size: 44px;
+    align-content: center;
   }
 }

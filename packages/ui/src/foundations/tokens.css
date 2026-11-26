@@ -42,10 +42,20 @@
   --sy-danger-soft: light-dark(#fff1f1, #3d1a1c);
   --sy-danger: light-dark(#b42323, #ff8a84);
   --sy-on-danger: light-dark(#ffffff, #2a0b0b);
+  /* Decorative blobs behind pages: a veil of the page's colour over them
+     (light-dark() takes colours only), so they stay faint in both schemes. */
+  --sy-blob-veil: light-dark(rgb(244 248 251 / 0.82), rgb(14 23 34 / 0.88));
+  /* Clinical alerts: a deeper red than the soft tint, text 8.8:1 (light)
+     and 11:1 (dark), the bar and the icon disc above 4.5:1 on it. */
+  --sy-alert-bg: light-dark(#fcd2cd, #5a1418);
+  --sy-alert-ink: light-dark(#6e0f0f, #ffe0dc);
   --sy-violet-ink: light-dark(#4b3fa8, #cbc2ff);
   --sy-violet-soft: light-dark(#efecfc, #2a2550);
   --sy-neutral-ink: light-dark(#4f6072, #b4c1cf);
   --sy-neutral-soft: light-dark(#edf2f7, #223142);
+  /* Loading shapes: visible on a surface and on a striped (sunken) row. */
+  --sy-skeleton: light-dark(#dfe6ee, #2a3a4f);
+  --sy-skeleton-shine: light-dark(#f3f6f9, #364a62);
 
   /* Type */
   --sy-font: "IBM Plex Sans", "IBM Plex Sans Arabic", system-ui, sans-serif;

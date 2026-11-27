@@ -196,3 +196,23 @@ test.describe("Schedule", () => {
     }
   });
 });
+
+test.describe("Nothing spills out of a table's frame", () => {
+  for (const width of [320, 412]) {
+    test(`at ${width}px`, async ({ browser }) => {
+      const page = await browser.newPage({ viewport: { width, height: 800 }, isMobile: true, hasTouch: true });
+      for (const id of ["stock", "in-narrow-container", "from-api"]) {
+        await page.goto(story(`données-datatable--${id}`));
+        await expect(page.locator("tbody th").first()).toBeVisible();
+        const spilled = await page.evaluate(() => {
+          const frame = document.querySelector(".sy-table").getBoundingClientRect();
+          return [...document.querySelectorAll(".sy-table *")]
+            .filter((el) => el.getBoundingClientRect().width > 0 && el.getBoundingClientRect().right > frame.right + 0.5)
+            .map((el) => el.className);
+        });
+        expect(spilled, id).toEqual([]);
+      }
+      await page.close();
+    });
+  }
+});

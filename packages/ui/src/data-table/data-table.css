@@ -5,6 +5,9 @@
  */
 .sy-table {
   display: grid;
+  /* One column as wide as the frame: a child's intrinsic width (a search
+     field's 20 characters) never widens the table past it. */
+  grid-template-columns: minmax(0, 1fr);
   gap: var(--sy-space-4);
   padding: var(--sy-space-5);
   border-radius: var(--sy-radius-xl);
@@ -266,14 +269,6 @@
   container: sy-table-frame / inline-size;
 }
 
-/* Same width as the rows' switch to cards (the frame has no padding). */
-@container sy-table-frame (inline-size < 40rem) {
-  .sy-table__sortpick {
-    display: flex;
-    inline-size: 100%;
-  }
-}
-
 /* Narrow: each row a card, each cell labelled by its column. */
 @container sy-table (inline-size < 40rem) {
   .sy-table__table,
@@ -309,17 +304,37 @@
     content: none;
   }
 
+  /* A card: the name on its own line, then the other cells side by side
+     (they wrap when they must), each label and value on one line. */
+  .sy-table__table tbody tr:not(.sy-table__filler, .sy-table__skeleton, .sy-table__empty) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--sy-space-1) var(--sy-space-4);
+  }
+
   .sy-table__table tbody tr {
     margin-block-end: var(--sy-space-2);
-    padding: var(--sy-space-3);
+    padding: var(--sy-space-3) var(--sy-space-4);
     border-radius: var(--sy-radius-lg);
     background: var(--sy-sunken);
   }
 
   .sy-table__table tbody tr > * {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--sy-space-1);
+    min-inline-size: 0;
     background: none !important;
     border-radius: 0 !important;
-    padding: var(--sy-space-1) 0;
+    padding: 0;
+    white-space: nowrap;
+  }
+
+  .sy-table__table tbody th[scope="row"] {
+    flex-basis: 100%;
+    min-inline-size: 0;
+    white-space: normal;
   }
 
   .sy-table__table tbody :is(th, td)[data-align="end"] {
@@ -327,14 +342,29 @@
   }
 
   .sy-table__table tbody td::before {
-    content: attr(data-label) " : ";
+    content: attr(data-label);
     color: var(--sy-ink-2);
     font-size: var(--sy-text-sm);
   }
 
-  .sy-table__table tbody th {
-    font-size: var(--sy-text-lg);
+  /* A status speaks for itself: no label before its pill. */
+  .sy-table__table tbody td:has(> .sy-pill)::before {
+    content: none;
   }
+
+  .sy-table__table tbody th {
+    font-size: var(--sy-text-md);
+  }
+
+  .sy-table__table .sy-table__empty td {
+    display: block;
+    white-space: normal;
+  }
+
+  .sy-table__table .sy-table__empty td::before {
+    content: none;
+  }
+
 }
 
 @media (forced-colors: active) {
@@ -405,4 +435,26 @@
     min-block-size: 44px;
     align-content: center;
   }
+}
+
+/* The pagination sits outside the scrolling table: it follows the frame. */
+@container sy-table-frame (inline-size < 40rem) {
+  /* Pages: the arrows alone, their words kept for screen readers. */
+  .sy-table__pages {
+    justify-content: space-between;
+  }
+
+  .sy-table__page-word {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+/* "Suivante" then its arrow. */
+.sy-table__next {
+  flex-direction: row-reverse;
 }

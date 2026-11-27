@@ -448,7 +448,7 @@ export function DataTable<Row>({
             disabled={query.page <= 1}
             onClick={() => setQuery((q) => ({ ...q, page: q.page - 1 }))}
           >
-            {t("previous")}
+            <span class="sy-table__page-word">{t("previous")}</span>
           </Button>
           <span class="sy-num">
             {t("pageOf", { page: number(query.page), pages: number(pages) })}
@@ -457,8 +457,11 @@ export function DataTable<Row>({
             size="sm"
             disabled={query.page >= pages}
             onClick={() => setQuery((q) => ({ ...q, page: q.page + 1 }))}
+            icon="chevronEnd"
+            flipIcon
+            class="sy-table__next"
           >
-            {t("next")}
+            <span class="sy-table__page-word">{t("next")}</span>
           </Button>
         </nav>
       )}

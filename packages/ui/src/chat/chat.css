@@ -1,0 +1,439 @@
+/*
+ * Messages as soft bubbles (mine in the brand's blue, at the end side),
+ * grouped by author, days set apart; a composer that grows with the text.
+ * No rules: surfaces and tints only.
+ */
+.sy-chat {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  min-block-size: 0;
+  block-size: 100%;
+  background: var(--sy-surface);
+}
+
+.sy-chat__head {
+  display: flex;
+  align-items: center;
+  gap: var(--sy-space-3);
+  padding: var(--sy-space-3) var(--sy-space-4);
+  background: var(--sy-surface);
+  box-shadow: var(--sy-shadow-soft);
+  z-index: 1;
+}
+
+.sy-chat__avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  inline-size: 40px;
+  block-size: 40px;
+  border-radius: 50%;
+  background: var(--sy-primary-soft);
+  color: var(--sy-primary-ink);
+  font-size: var(--sy-text-sm);
+  font-weight: var(--sy-weight-bold);
+}
+
+.sy-chat__who {
+  min-inline-size: 0;
+}
+
+.sy-chat__title {
+  margin: 0;
+  font-size: var(--sy-text-md);
+  font-weight: var(--sy-weight-strong);
+}
+
+.sy-chat__sub {
+  margin: 0;
+  overflow: hidden;
+  color: var(--sy-ink-2);
+  font-size: var(--sy-text-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sy-chat__body {
+  position: relative;
+  min-block-size: 0;
+}
+
+.sy-chat__log {
+  block-size: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--sy-space-4);
+  background: var(--sy-bg);
+}
+
+.sy-chat__log:focus-visible {
+  outline: 2px solid var(--sy-primary);
+  outline-offset: -2px;
+}
+
+.sy-chat__messages {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sy-chat__day {
+  justify-self: center;
+  margin-block: var(--sy-space-3);
+  padding: var(--sy-space-1) var(--sy-space-3);
+  border-radius: var(--sy-radius-pill);
+  background: var(--sy-surface);
+  color: var(--sy-ink-2);
+  font-size: var(--sy-text-xs);
+  font-weight: var(--sy-weight-strong);
+}
+
+.sy-chat__message {
+  display: grid;
+  justify-items: start;
+  gap: 2px;
+  justify-self: start;
+  max-inline-size: min(36rem, 80%);
+  padding: var(--sy-space-2) var(--sy-space-3);
+  border-radius: var(--sy-radius-md);
+  background: var(--sy-surface);
+  box-shadow: var(--sy-shadow-soft);
+}
+
+.sy-chat__message--first {
+  margin-block-start: var(--sy-space-2);
+  border-start-start-radius: var(--sy-radius-sm);
+}
+
+.sy-chat__message--mine {
+  justify-self: end;
+  background: var(--sy-primary);
+  color: var(--sy-on-primary);
+}
+
+.sy-chat__message--mine.sy-chat__message--first {
+  border-start-start-radius: var(--sy-radius-md);
+  border-start-end-radius: var(--sy-radius-sm);
+}
+
+.sy-chat__message--mine[data-status="failed"] {
+  background: var(--sy-danger-soft);
+  color: var(--sy-danger-ink);
+}
+
+.sy-chat__author {
+  color: var(--sy-primary-ink);
+  font-size: var(--sy-text-xs);
+  font-weight: var(--sy-weight-bold);
+}
+
+.sy-chat__text {
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.sy-chat__meta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sy-space-1);
+  justify-self: end;
+  font-size: var(--sy-text-xs);
+  opacity: 0.85;
+}
+
+.sy-chat__message--mine .sy-chat__meta {
+  opacity: 1;
+}
+
+.sy-chat__status {
+  display: inline-flex;
+  align-items: center;
+}
+
+.sy-chat__status--failed {
+  font-weight: var(--sy-weight-strong);
+}
+
+.sy-chat__loading {
+  display: grid;
+  gap: var(--sy-space-3);
+}
+
+.sy-chat__ghost {
+  display: flex;
+}
+
+.sy-chat__ghost--mine {
+  justify-content: flex-end;
+}
+
+.sy-chat__empty {
+  margin: 0;
+  padding: var(--sy-space-6);
+  color: var(--sy-ink-2);
+  text-align: center;
+}
+
+/* Someone is typing: three dots that bounce, still when motion is reduced. */
+.sy-chat__typing {
+  display: flex;
+  align-items: center;
+  gap: var(--sy-space-2);
+  margin: var(--sy-space-3) 0 0;
+  color: var(--sy-ink-2);
+  font-size: var(--sy-text-sm);
+}
+
+.sy-chat__dots {
+  display: inline-flex;
+  gap: 3px;
+  padding: var(--sy-space-2) var(--sy-space-3);
+  border-radius: var(--sy-radius-pill);
+  background: var(--sy-surface);
+}
+
+.sy-chat__dots span {
+  inline-size: 6px;
+  block-size: 6px;
+  border-radius: 50%;
+  background: var(--sy-ink-2);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .sy-chat__dots span {
+    animation: sy-typing 1s ease-in-out infinite;
+  }
+
+  .sy-chat__dots span:nth-child(2) {
+    animation-delay: 0.15s;
+  }
+
+  .sy-chat__dots span:nth-child(3) {
+    animation-delay: 0.3s;
+  }
+
+  /* A new message slides in (never fades: its text keeps its contrast). */
+  .sy-chat__message {
+    transition: translate 200ms cubic-bezier(0.2, 0.8, 0.2, 1);
+
+    @starting-style {
+      translate: 0 0.5rem;
+    }
+  }
+}
+
+@keyframes sy-typing {
+  50% {
+    translate: 0 -3px;
+  }
+}
+
+.sy-chat__end {
+  block-size: 1px;
+}
+
+.sy-chat__unseen {
+  position: absolute;
+  inset-block-end: var(--sy-space-3);
+  inset-inline-start: 50%;
+  translate: -50% 0;
+  box-shadow: var(--sy-shadow-card);
+}
+
+.sy-chat__unseen:dir(rtl) {
+  translate: 50% 0;
+}
+
+.sy-chat__composer {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--sy-space-2);
+  padding: var(--sy-space-3) var(--sy-space-4);
+  padding-block-end: max(var(--sy-space-3), env(safe-area-inset-bottom));
+  background: var(--sy-surface);
+}
+
+/* Grows with the text, from one line to six, then scrolls. Where
+   field-sizing is missing it keeps its three lines and scrolls. */
+.sy-chat__field {
+  flex: 1;
+  min-inline-size: 0;
+  inline-size: 100%;
+  block-size: auto;
+  min-block-size: calc(1lh + 2 * var(--sy-space-2) + 4px);
+  max-block-size: calc(6lh + 2 * var(--sy-space-2));
+  padding: var(--sy-space-2) var(--sy-space-4);
+  border: 1.5px solid var(--sy-edge);
+  border-radius: var(--sy-radius-md);
+  background: var(--sy-surface);
+  color: var(--sy-ink);
+  font: inherit;
+  line-height: 1.5;
+  resize: none;
+  field-sizing: content;
+}
+
+@supports not (field-sizing: content) {
+  .sy-chat__field {
+    block-size: calc(3lh + 2 * var(--sy-space-2));
+  }
+}
+
+.sy-chat__field:focus-visible {
+  outline: 2px solid var(--sy-primary);
+  outline-offset: 1px;
+}
+
+.sy-chat__send {
+  flex: none;
+}
+
+/* The conversations. */
+.sy-conversations ul {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sy-conversations__item {
+  display: flex;
+  align-items: center;
+  gap: var(--sy-space-3);
+  inline-size: 100%;
+  min-block-size: 44px;
+  padding: var(--sy-space-3);
+  border: 0;
+  border-radius: var(--sy-radius-md);
+  background: none;
+  color: var(--sy-ink);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.sy-conversations__item:hover {
+  background: var(--sy-sunken);
+}
+
+.sy-conversations__item[aria-current="true"] {
+  background: var(--sy-primary-soft);
+}
+
+.sy-conversations__item:focus-visible {
+  outline: 2px solid var(--sy-primary);
+  outline-offset: -2px;
+}
+
+.sy-conversations__text {
+  display: grid;
+  flex: 1;
+  min-inline-size: 0;
+}
+
+.sy-conversations__name {
+  font-weight: var(--sy-weight-strong);
+}
+
+.sy-conversations__last {
+  overflow: hidden;
+  color: var(--sy-ink-2);
+  font-size: var(--sy-text-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sy-conversations__side {
+  display: grid;
+  justify-items: end;
+  gap: var(--sy-space-1);
+  color: var(--sy-ink-2);
+  font-size: var(--sy-text-xs);
+}
+
+.sy-conversations__unread {
+  display: inline-grid;
+  place-items: center;
+  min-inline-size: 1.375rem;
+  block-size: 1.375rem;
+  padding-inline: var(--sy-space-1);
+  border-radius: var(--sy-radius-pill);
+  background: var(--sy-primary);
+  color: var(--sy-on-primary);
+  font-weight: var(--sy-weight-bold);
+}
+
+/* The messenger: side by side, or one at a time below 44rem of frame. */
+.sy-messenger {
+  container: sy-messenger / inline-size;
+  display: grid;
+  grid-template-columns: minmax(16rem, 22rem) minmax(0, 1fr);
+  /* One row as tall as the frame: the log scrolls, the composer stays. */
+  grid-template-rows: minmax(0, 1fr);
+  block-size: var(--sy-messenger-height, min(44rem, 85dvh));
+  overflow: hidden;
+  border-radius: var(--sy-radius-xl);
+  background: var(--sy-surface);
+  box-shadow: var(--sy-shadow-card);
+}
+
+.sy-messenger__list {
+  overflow-y: auto;
+  padding: var(--sy-space-4) var(--sy-space-3);
+  background: var(--sy-surface);
+}
+
+.sy-messenger__title {
+  margin: 0 var(--sy-space-3) var(--sy-space-3);
+  font-size: var(--sy-text-lg);
+  font-weight: var(--sy-weight-strong);
+}
+
+.sy-messenger__thread {
+  min-block-size: 0;
+}
+
+.sy-messenger__empty {
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: var(--sy-space-2);
+  block-size: 100%;
+  margin: 0;
+  background: var(--sy-bg);
+  color: var(--sy-ink-2);
+}
+
+.sy-messenger .sy-chat__back {
+  display: none;
+}
+
+@container sy-messenger (inline-size < 44rem) {
+  .sy-messenger__list,
+  .sy-messenger__thread {
+    grid-area: 1 / 1 / 2 / -1;
+  }
+
+  .sy-messenger[data-open] .sy-messenger__list,
+  .sy-messenger:not([data-open]) .sy-messenger__thread {
+    display: none;
+  }
+
+  .sy-messenger .sy-chat__back {
+    display: inline-flex;
+  }
+
+  .sy-chat__message {
+    max-inline-size: 88%;
+  }
+}
+
+@media (forced-colors: active) {
+  .sy-chat__message {
+    border: 1px solid CanvasText;
+  }
+}

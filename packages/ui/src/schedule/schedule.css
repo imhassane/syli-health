@@ -1,0 +1,373 @@
+/*
+ * A week drawn to scale: a quarter hour is a grid row, hours alternate a
+ * soft band (no rules), events are tinted cards at their time. Below 40rem
+ * of frame: a row of days, then the chosen day as a list.
+ */
+.sy-schedule {
+  --sy-schedule-quarter: 0.875rem;
+  --sy-schedule-head: 3.25rem;
+  container: sy-schedule / inline-size;
+  display: grid;
+  gap: var(--sy-space-4);
+  padding: var(--sy-space-5);
+  border-radius: var(--sy-radius-xl);
+  background: var(--sy-surface);
+  box-shadow: var(--sy-shadow-card);
+}
+
+.sy-schedule__bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sy-space-3);
+}
+
+.sy-schedule__heading {
+  margin-inline-end: auto;
+}
+
+.sy-schedule__title {
+  margin: 0;
+  font-size: var(--sy-text-lg);
+  font-weight: var(--sy-weight-strong);
+}
+
+.sy-schedule__range {
+  margin: 0;
+  color: var(--sy-ink-2);
+  font-size: var(--sy-text-sm);
+}
+
+.sy-schedule__nav,
+.sy-schedule__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sy-space-2);
+}
+
+.sy-schedule__picker {
+  display: none;
+}
+
+.sy-schedule__scroll {
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
+.sy-schedule__grid {
+  display: grid;
+  grid-template-columns: 3.75rem repeat(var(--sy-schedule-days), minmax(8rem, 1fr));
+  gap: 0 var(--sy-space-2);
+}
+
+.sy-schedule__hours {
+  display: grid;
+  grid-template-rows: repeat(var(--sy-schedule-quarters), var(--sy-schedule-quarter));
+  padding-block-start: var(--sy-schedule-head);
+}
+
+.sy-schedule__hour {
+  color: var(--sy-ink-2);
+  font-size: var(--sy-text-xs);
+  translate: 0 -0.6em;
+}
+
+.sy-schedule__day {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: var(--sy-schedule-head) auto;
+  min-inline-size: 0;
+}
+
+.sy-schedule__day-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: var(--sy-space-1);
+  margin: 0;
+  padding-block-start: var(--sy-space-2);
+  color: var(--sy-ink-2);
+  font-size: var(--sy-text-sm);
+  font-weight: var(--sy-weight-strong);
+  text-transform: capitalize;
+}
+
+.sy-schedule__day-title .sy-num {
+  color: var(--sy-ink);
+  font-size: var(--sy-text-lg);
+}
+
+/* Today: its date in a filled disc. */
+.sy-schedule__day-title[aria-current="date"] .sy-num {
+  display: inline-grid;
+  place-items: center;
+  min-inline-size: 2rem;
+  block-size: 2rem;
+  border-radius: 50%;
+  background: var(--sy-primary);
+  color: var(--sy-on-primary);
+}
+
+.sy-schedule__slots {
+  position: relative;
+  min-inline-size: 0;
+  /* Events never spill into the next day (the now line's disc may). */
+  overflow: clip;
+  overflow-clip-margin: 6px;
+  border-radius: var(--sy-radius-md);
+  /* One hour in two a soft band: the hours read without lines. */
+  background: linear-gradient(to bottom, var(--sy-sunken) 50%, transparent 50%) 0 0 / 100% calc(var(--sy-schedule-quarter) * 8);
+}
+
+.sy-schedule__empty {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  /* Said to screen readers; the empty column speaks for itself on screen. */
+  clip-path: inset(50%);
+}
+
+.sy-schedule__events {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: repeat(var(--sy-schedule-quarters), var(--sy-schedule-quarter));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sy-schedule__event {
+  box-sizing: border-box;
+  grid-column: 1;
+  min-inline-size: 0;
+  min-block-size: 0;
+  inline-size: calc(100% / var(--lanes, 1));
+  margin-inline-start: calc(100% * var(--lane, 0) / var(--lanes, 1));
+  padding: 1px;
+}
+
+.sy-schedule__event--info { --tone-bg: var(--sy-primary-soft); --tone-ink: var(--sy-primary-ink); }
+.sy-schedule__event--success { --tone-bg: var(--sy-success-soft); --tone-ink: var(--sy-success-ink); }
+.sy-schedule__event--warning { --tone-bg: var(--sy-warning-soft); --tone-ink: var(--sy-warning-ink); }
+.sy-schedule__event--danger { --tone-bg: var(--sy-danger-soft); --tone-ink: var(--sy-danger-ink); }
+.sy-schedule__event--violet { --tone-bg: var(--sy-violet-soft); --tone-ink: var(--sy-violet-ink); }
+.sy-schedule__event--neutral { --tone-bg: var(--sy-neutral-soft); --tone-ink: var(--sy-neutral-ink); }
+
+.sy-schedule__open {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  inline-size: 100%;
+  block-size: 100%;
+  overflow: hidden;
+  padding: var(--sy-space-1) var(--sy-space-2);
+  border: 0;
+  border-radius: var(--sy-radius-sm);
+  background: var(--tone-bg);
+  color: var(--tone-ink);
+  font: inherit;
+  font-size: var(--sy-text-xs);
+  line-height: 1.3;
+  text-align: start;
+  cursor: pointer;
+}
+
+.sy-schedule__open:disabled {
+  cursor: default;
+}
+
+.sy-schedule__open:hover:not(:disabled) {
+  filter: brightness(0.97);
+}
+
+.sy-schedule__open:focus-visible {
+  outline: 2px solid var(--sy-primary);
+  outline-offset: 1px;
+}
+
+.sy-schedule__time {
+  font-weight: var(--sy-weight-strong);
+  white-space: nowrap;
+}
+
+.sy-schedule__what {
+  font-weight: var(--sy-weight-strong);
+  font-size: var(--sy-text-sm);
+}
+
+.sy-schedule__who {
+  color: var(--tone-ink);
+}
+
+/* A quarter or half hour: one line, time and title side by side. */
+.sy-schedule__event[data-short] .sy-schedule__open {
+  flex-direction: row;
+  align-items: center;
+  gap: var(--sy-space-1);
+  white-space: nowrap;
+}
+
+.sy-schedule__event[data-short] .sy-schedule__who {
+  display: none;
+}
+
+/* Now: a line across today, a disc at its start. */
+.sy-schedule__now {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: calc(var(--now) * 100%);
+  z-index: 1;
+  block-size: 2px;
+  background: var(--sy-danger);
+  pointer-events: none;
+}
+
+.sy-schedule__now::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: -5px;
+  inset-block-start: -4px;
+  inline-size: 10px;
+  block-size: 10px;
+  border-radius: 50%;
+  background: var(--sy-danger);
+}
+
+/* Narrow: a row of days (one line, it scrolls), then one day as a list. */
+@container sy-schedule (inline-size < 40rem) {
+  .sy-schedule__picker {
+    display: flex;
+    gap: var(--sy-space-2);
+    overflow-x: auto;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+  }
+
+  .sy-schedule__pick {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    flex: 1 0 3.25rem;
+    gap: 2px;
+    min-block-size: 44px;
+    padding: var(--sy-space-2) var(--sy-space-1);
+    border: 0;
+    border-radius: var(--sy-radius-md);
+    background: var(--sy-sunken);
+    color: var(--sy-ink);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .sy-schedule__pick-day {
+    color: var(--sy-ink-2);
+    font-size: var(--sy-text-xs);
+    text-transform: capitalize;
+  }
+
+  .sy-schedule__pick-date {
+    font-weight: var(--sy-weight-strong);
+  }
+
+  .sy-schedule__pick[aria-pressed="true"] {
+    background: var(--sy-primary);
+    color: var(--sy-on-primary);
+  }
+
+  .sy-schedule__pick[aria-pressed="true"] .sy-schedule__pick-day {
+    color: inherit;
+  }
+
+  .sy-schedule__pick[aria-current="date"]:not([aria-pressed="true"]) {
+    box-shadow: inset 0 0 0 2px var(--sy-primary);
+  }
+
+  .sy-schedule__dot {
+    inline-size: 6px;
+    block-size: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  .sy-schedule__pick:focus-visible {
+    outline: 2px solid var(--sy-primary);
+    outline-offset: 2px;
+  }
+
+  .sy-schedule__hours,
+  .sy-schedule__day:not([data-selected]),
+  .sy-schedule__now {
+    display: none;
+  }
+
+  .sy-schedule__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sy-schedule__day {
+    grid-template-rows: auto auto;
+  }
+
+  .sy-schedule__day-title {
+    justify-content: flex-start;
+    padding-block: 0 var(--sy-space-2);
+  }
+
+  .sy-schedule__slots {
+    background: none;
+  }
+
+  .sy-schedule__empty {
+    position: static;
+    clip-path: none;
+    padding: var(--sy-space-5);
+    border-radius: var(--sy-radius-md);
+    background: var(--sy-sunken);
+    color: var(--sy-ink-2);
+    text-align: center;
+  }
+
+  .sy-schedule__events {
+    display: grid;
+    grid-template-rows: none;
+    gap: var(--sy-space-2);
+  }
+
+  .sy-schedule__event {
+    grid-row: auto !important;
+    inline-size: auto;
+    margin: 0;
+    padding: 0;
+  }
+
+  .sy-schedule__event .sy-schedule__open,
+  .sy-schedule__event[data-short] .sy-schedule__open {
+    flex-direction: column;
+    align-items: flex-start;
+    min-block-size: 44px;
+    padding: var(--sy-space-3) var(--sy-space-4);
+    border-radius: var(--sy-radius-md);
+    font-size: var(--sy-text-sm);
+    white-space: normal;
+  }
+
+  .sy-schedule__event[data-short] .sy-schedule__who {
+    display: block;
+  }
+
+  .sy-schedule__what {
+    font-size: var(--sy-text-md);
+  }
+}
+
+@media (forced-colors: active) {
+  .sy-schedule__open {
+    border: 1px solid CanvasText;
+  }
+
+  .sy-schedule__now,
+  .sy-schedule__now::before {
+    background: Highlight;
+  }
+}

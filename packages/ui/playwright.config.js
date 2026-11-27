@@ -9,7 +9,7 @@ export default defineConfig({
   testDir: "e2e",
   reporter: [["list"]],
   workers: 6,
-  use: { baseURL: "http://localhost:6007", launchOptions: chrome },
+  use: { screenshot: "only-on-failure", baseURL: "http://localhost:6007", launchOptions: chrome },
   projects: [
     { name: "telephone", use: { ...devices["Pixel 7"], launchOptions: chrome } },
     { name: "tablette", use: { viewport: { width: 820, height: 1180 }, hasTouch: true, isMobile: true, launchOptions: chrome } },

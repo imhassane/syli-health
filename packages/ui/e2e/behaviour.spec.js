@@ -147,3 +147,52 @@ test.describe("Fixed frame", () => {
     expect(tops.size).toBe(1);
   });
 });
+
+test.describe("Messenger", () => {
+  test("a message goes out, the answer comes in; the composer grows with the text", async ({ page }) => {
+    // The story opens Dr Touré's conversation (on a phone too).
+    await page.goto(story("messagerie-messenger--live"));
+    const field = page.getByRole("textbox", { name: "Message à Dr Aminata Touré" });
+    await expect(field).toBeVisible();
+    const one = (await field.boundingBox()).height;
+    await field.fill("Ligne 1\nLigne 2\nLigne 3");
+    expect((await field.boundingBox()).height).toBeGreaterThan(one + 20);
+    await field.fill("L’ordonnance de M. Sow est prête.");
+    await field.press("Enter");
+    const log = page.getByRole("log", { name: "Messages" });
+    await expect(log.getByText("L’ordonnance de M. Sow est prête.")).toBeVisible();
+    await expect(log.getByText("Entendu, merci.")).toBeVisible({ timeout: 8000 });
+    // The newest message is in view.
+    await expect(log.getByText("Entendu, merci.")).toBeInViewport();
+  });
+
+  test("on a phone: the list, then the conversation, then back", async ({ page, viewport }) => {
+    test.skip((viewport?.width ?? 1280) >= 700, "phones only");
+    await page.goto(story("messagerie-messenger--on-a-phone"));
+    await page.getByRole("button", { name: /Laborex Guinée/ }).click();
+    await expect(page.getByRole("heading", { name: "Laborex Guinée" })).toBeVisible();
+    await expect(page.getByRole("navigation", { name: "Conversations" })).toBeHidden();
+    await page.getByRole("button", { name: "Retour aux conversations" }).click();
+    await expect(page.getByRole("navigation", { name: "Conversations" })).toBeVisible();
+  });
+});
+
+test.describe("Schedule", () => {
+  test("wide: events sit inside their day; narrow: one day at a time", async ({ page, viewport }) => {
+    await page.goto(story("planning-schedule--week-view"));
+    const wednesday = page.getByRole("region", { name: /mer\. 25/ });
+    await expect(wednesday).toBeVisible();
+    if ((viewport?.width ?? 1280) >= 700) {
+      const day = await wednesday.locator(".sy-schedule__slots").boundingBox();
+      for (const box of await wednesday.locator(".sy-schedule__event").evaluateAll((els) => els.map((el) => el.getBoundingClientRect().toJSON()))) {
+        expect(box.left).toBeGreaterThanOrEqual(day.x - 1);
+        expect(box.right).toBeLessThanOrEqual(day.x + day.width + 1);
+      }
+    } else {
+      await expect(page.getByRole("region", { name: /lun\. 23/ })).toBeHidden();
+      await page.getByRole("group", { name: "Jours de la semaine" }).getByRole("button", { name: /^lun\./i }).click();
+      await expect(page.getByRole("region", { name: /lun\. 23/ })).toBeVisible();
+      await expect(wednesday).toBeHidden();
+    }
+  });
+});

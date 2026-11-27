@@ -14,3 +14,5 @@
 @import "./patient-banner/patient-banner.css";
 @import "./clinical-alert/clinical-alert.css";
 @import "./theme-toggle/theme-toggle.css";
+@import "./schedule/schedule.css";
+@import "./chat/chat.css";

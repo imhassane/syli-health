@@ -9,6 +9,13 @@
    (loadFonts in i18n/I18n.tsx): Noto Sans SC alone is ~200 @font-face rules,
    100 KB of CSS every page would otherwise carry. */
 
+/* Sizes include padding and border: a box at 100% never spills. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 :root {
   /* Heights can animate to auto (messages that unfold), where supported. */
   interpolate-size: allow-keywords;

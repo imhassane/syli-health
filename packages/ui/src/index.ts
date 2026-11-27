@@ -18,3 +18,7 @@ export { Logo, LogoMark, type LogoProps, type Product } from "./logo/Logo.tsx";
 export { Blob, BlobField, type BlobProps, type BlobFieldProps } from "./blob/Blob.tsx";
 export { I18nProvider, useI18n, makeI18n, applyLocale, loadFonts, type I18n } from "./i18n/I18n.tsx";
 export { locales, localeCodes, defaultLocale, preferredLocale, isLocale, type Locale } from "./i18n/locales.ts";
+export { Schedule, type ScheduleProps, type ScheduleEvent } from "./schedule/Schedule.tsx";
+export { mondayOf, placeDay } from "./schedule/week.ts";
+export { ChatThread, ConversationList, Messenger, type MessengerProps } from "./chat/Chat.tsx";
+export { fakeTransport, type ChatTransport, type ChatEvent, type ChatMessage, type Conversation, type Participant, type MessageStatus } from "./chat/transport.ts";
